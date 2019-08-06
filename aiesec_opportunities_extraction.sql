@@ -119,4 +119,4 @@ LEFT JOIN
                                               sub.type_name ) AS sub2
                    GROUP BY sub2.repr_id
                    ORDER BY sub2.repr_id ) AS sub_jd_pref
-ON        "public"."opportunities".id = sub_jd_pref.repr_id limit 100000;
+ON        "public"."opportunities".id = sub_jd_pref.repr_id LIMIT 60000;

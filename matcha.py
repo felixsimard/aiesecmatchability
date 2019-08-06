@@ -877,7 +877,11 @@ for index, row in opps.iterrows():
         month_ratio = 0.00
 
 
-    which_program = programs.index(program_name)
+    try:
+        which_program = programs.index(program_name)
+    except:
+        which_program = 0
+
     df_data = [opp_id, month_ratio, 0, 0, 0]
     df_data[which_program+2] = 1
 
@@ -1252,6 +1256,7 @@ print("Logistic Regression Score:", ((predictions_new>0.5) == y_test).mean())
 print("------------------------------------", "\n")
 
 # Plotting
+'''
 fig, ax = plt.subplots(figsize=(10, 10))
 plt.plot([0,1], [0,1], linestyle='--')
 plt.plot(roc['fpr'], roc['tpr'], color='red')
@@ -1260,13 +1265,13 @@ plt.ylabel('True Positive Rate')
 plt.title('Receiver Operating Characteristic')
 ax.set_xticklabels([])
 
-'''
+
 print("Saving plot...")
 filename = 'roc_logisitic_regression.png'
 plt.savefig(filename)
 print("Plot saved in the current working directory as", filename, "\n")
-
 '''
+
 
 
 print("End of logistic regression.", "\n")
@@ -1353,6 +1358,7 @@ i = np.arange(len(tpr))
 roc = pd.DataFrame({'fpr' : pd.Series(fpr, index=i),'tpr' : pd.Series(tpr, index = i), 'fpr' : pd.Series(fpr, index = i), 'tf' : pd.Series(tpr - (fpr), index = i), 'thresholds' : pd.Series(thresholds, index = i)})
 roc.iloc[(roc.tf-0).abs().argsort()[:1]]
 
+'''
 # Plotting
 fig, ax = plt.subplots(figsize=(10, 10))
 plt.plot([0,1], [0,1], linestyle='--')
@@ -1362,7 +1368,7 @@ plt.ylabel('True Positive Rate')
 plt.title('Receiver Operating Characteristic')
 ax.set_xticklabels([])
 
-'''
+
 print("Saving plot...")
 filename = 'roc_decision_tree.png'
 plt.savefig(filename)
@@ -1439,12 +1445,14 @@ for f in range(len(features_list)):
     pass
 
 
+'''
 plt.figure(figsize=(10, 10))
 plt.title("Feature Importances")
 plt.barh(features_list[::-1], importances[indices],
        color=[(0, 0.552, 0.827)], align="center", linewidth=5)
 plt.xlabel("Feature Score")
 plt.show()
+'''
 
 
 # Test Model on testing data
@@ -1481,6 +1489,7 @@ i = np.arange(len(tpr))
 roc = pd.DataFrame({'fpr' : pd.Series(fpr, index=i),'tpr' : pd.Series(tpr, index = i), 'fpr' : pd.Series(fpr, index = i), 'tf' : pd.Series(tpr - (fpr), index = i), 'thresholds' : pd.Series(thresholds, index = i)})
 roc.iloc[(roc.tf-0).abs().argsort()[:1]]
 
+'''
 # Plotting
 fig, ax = plt.subplots(figsize=(10, 10))
 plt.plot([0,1], [0,1], linestyle='--')
@@ -1490,7 +1499,6 @@ plt.ylabel('True Positive Rate')
 plt.title('Receiver Operating Characteristic')
 ax.set_xticklabels([])
 
-'''
 print("Saving plot...")
 filename = 'roc_random_forest.png'
 plt.savefig(filename)
