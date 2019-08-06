@@ -12,7 +12,7 @@ with open('dummydata.json') as f:
     d = json.load(f)
 
 # define the target URL
-url = "http://localhost:5000/matchability-api"
+url = "http://localhost:5000/api/opportunity"
 
 data = d
 res = requests.post(url, verify=False, json=data)

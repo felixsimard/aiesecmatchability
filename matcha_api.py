@@ -12,7 +12,7 @@ from matchability import matchability
 
 app = Flask(__name__) # create the Flask app
 
-@app.route('/matchability-api', methods=['GET', 'POST'])
+@app.route('/api/opportunity', methods=['GET', 'POST'])
 
 def matcha_request():
     if request.method == "POST":
