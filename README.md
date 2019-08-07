@@ -131,7 +131,6 @@ aiesec_opportunities_extracted.csv
 ```
 aiesec_applications_extracted.csv
 ```
-They are simply the returned rows from the SQL data extraction.
 
 
 ## Authors
