@@ -414,11 +414,11 @@ def matchability(d):
     ### K-MEANS for JOB DESCRIPTION ###
 
     # Load the kmeans pickle
-    km = pickle.load(open("kmeans.pickle", 'rb'))
+    km = pickle.load(open("pickles/kmeans.pickle", 'rb'))
 
-    vec = pickle.load(open("vectorizer.pickle", 'rb'))
+    vec = pickle.load(open("pickles/vectorizer.pickle", 'rb'))
 
-    cluster_terms = pickle.load(open("cluster_terms.pickle", 'rb'))
+    cluster_terms = pickle.load(open("pickles/cluster_terms.pickle", 'rb'))
 
     vectorizer = TfidfVectorizer()
     skills_vec = vec.transform(skills_df.skills)
@@ -547,10 +547,10 @@ def matchability(d):
     # Now predict the output
 
     # Open the model
-    model = pickle.load(open("matcha_model.pickle", 'rb'))
+    model = pickle.load(open("pickles/matcha_model.pickle", 'rb'))
 
     # Load the considered features
-    features = pickle.load(open("features.pickle", 'rb'))
+    features = pickle.load(open("pickles/features.pickle", 'rb'))
 
     # features dictionary
     feat_dict = {

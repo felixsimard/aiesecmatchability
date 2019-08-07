@@ -1,0 +1,11 @@
+{
+    "data": {
+      "duration_min": 6,
+      "name_entity": "Mexico",
+      "name_region": "Americas",
+      "title": "This is a test title",
+      "description": "This is a test description for the matchability model. This is completely useless. Some more words.",
+      "salary": 0,
+      "openings": 2
+    }
+}

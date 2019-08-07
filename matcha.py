@@ -330,13 +330,13 @@ print("SQL Data Extraction.")
 
 tic = time.time()
 # Fetch the opportunities
-opps = execute_sql("aiesec_opportunities_extraction.sql", "aiesec_opportunities_extracted.csv")
+opps = execute_sql("sql/aiesec_opportunities_extraction.sql", "aiesec_opportunities_extracted.csv")
 toc = time.time()
 print("Opportunities data extraction took:", round((toc-tic), 2), "seconds")
 
 # Fetch the applications
 tic = time.time()
-apps = execute_sql("aiesec_applications_extraction.sql", "aiesec_applications_extracted.csv")
+apps = execute_sql("sql/aiesec_applications_extraction.sql", "aiesec_applications_extracted.csv")
 toc = time.time()
 print("Applications data extraction took:", round((toc-tic), 2), "seconds")
 
@@ -964,10 +964,10 @@ centers = kmeans_groups.cluster_centers_
 labels = kmeans_groups.predict(X)
 
 # Save vectorizer object as Python pickle
-pickle.dump(vec, open("vectorizer.pickle", 'wb'))
+pickle.dump(vec, open("pickles/vectorizer.pickle", 'wb'))
 
 # Save kmeans object as Python pickle
-pickle.dump(kmeans_groups, open("kmeans.pickle", 'wb'))
+pickle.dump(kmeans_groups, open("pickles/kmeans.pickle", 'wb'))
 
 print("Fetching top words per clusters.", "\n")
 order_centroids = kmeans_groups.cluster_centers_.argsort()[:, ::-1]
@@ -998,7 +998,7 @@ for i in range(len(columns_name_list)):
 
 
 # Save cluster terms object as Python pickle
-pickle.dump(columns_name_list, open("cluster_terms.pickle", 'wb'))
+pickle.dump(columns_name_list, open("pickles/cluster_terms.pickle", 'wb'))
 
 columns_name_list.append("opportunity_id")
 
@@ -1187,7 +1187,7 @@ for feat in features:
 
 
 # Save features object as Python pickle
-pickle.dump(X_train.columns, open("features.pickle", 'wb'))
+pickle.dump(X_train.columns, open("pickles/features.pickle", 'wb'))
 
 print("Training model...")
 
@@ -1268,8 +1268,8 @@ ax.set_xticklabels([])
 
 print("Saving plot...")
 filename = 'roc_logisitic_regression.png'
-plt.savefig(filename)
-print("Plot saved in the current working directory as", filename, "\n")
+plt.savefig("Resources/"+filename)
+print("Plot saved as", filename, "\n")
 '''
 
 
@@ -1371,8 +1371,8 @@ ax.set_xticklabels([])
 
 print("Saving plot...")
 filename = 'roc_decision_tree.png'
-plt.savefig(filename)
-print("Plot saved in the current working directory as", filename, "\n")
+plt.savefig("Resources/"+filename)
+print("Plot saved as", filename, "\n")
 '''
 
 print("End of decision tree classifier.", "\n")
@@ -1402,10 +1402,10 @@ try:
     model.fit(X_train.astype(float), y_train.astype(float))
 
     # Save model as python pickle
-    pickle.dump(model, open("matcha_model.pickle", 'wb'))
+    pickle.dump(model, open("pickles/matcha_model.pickle", 'wb'))
 
     # Save testing columns names as pickle
-    pickle.dump(features, open("matcha_columns.pickle", "wb"))
+    pickle.dump(features, open("pickles/matcha_columns.pickle", "wb"))
 
     # predict on testing data
     #predictions_tree = model.predict(X_test.astype(float)) # change X_train for X_test
@@ -1501,8 +1501,8 @@ ax.set_xticklabels([])
 
 print("Saving plot...")
 filename = 'roc_random_forest.png'
-plt.savefig(filename)
-print("Plot saved in the current working directory as", filename, "\n")
+plt.savefig("Resources/"+filename)
+print("Plot saved as", filename, "\n")
 '''
 
 print("End of random forest classifier.", "\n")
