@@ -1,7 +1,7 @@
 '''
 
-Matchability - AIESEC International
-SeedAI - July 2019
+Matchability - Training model
+Data extraction, cleaning, formatting and model training.
 
 '''
 

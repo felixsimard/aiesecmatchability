@@ -1,6 +1,7 @@
 '''
 
 Matchability - Testing POST requests to API
+This file is simply for testing.
 
 '''
 
