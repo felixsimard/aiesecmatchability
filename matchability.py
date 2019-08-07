@@ -11,13 +11,22 @@ import re
 def dateDiff(date1, date2): # date1 and date2 come in as Strings
     diff = pd.to_datetime(date1) - pd.to_datetime(date2)
     diff = diff / np.timedelta64(1,'D')
-    return diff
+    if str(diff) == "nan" or str(diff) == "NaN":
+        return 0
+    else:
+        return diff
 
 def hasValue(x):
-    if x != None and type(x) != float and str(x) != "" and str(x) != "NaN" and str(x) != "nan":
+    if x != None and x != 0 and type(x) != float and str(x) != "" and str(x) != "NaN" and str(x) != "nan":
         return 1
     else:
         return 0
+
+def ifStringEmpty(x):
+    if x == None or x == "":
+        return ""
+    else:
+        return x
 
 def ifNull(x):
     if x == None:
@@ -196,64 +205,101 @@ lookup_country['Cyprus'] = ['Africa', 'CYP']
 lookup_country['Fiji'] = ['South Asia', 'FJI']
 lookup_country['Mali'] = ['Africa', 'MLI']
 
-#--------- this should not be in this file ----
-# Reading the JSON file
-with open('dummydata.json') as json_file:
-    data = json.load(json_file)
-
-# useful shortcut
-d = data["data"]
-
-#-----------------------------------------------
-
 
 def matchability(d):
     ### FETCH + FORMAT VARIABLES ###
 
     #------------------------------
-    duration_min = ifNull(d["duration_min"])
-
-    #------------------------------
-
-    #------------------------------
-    cover_picture_link = d["cover_picture_link"]
-    has_cover_pic = hasValue(cover_picture_link)
-
-    profile_picture_link = d["profile_picture_link"]
-    has_profile_pic = hasValue(profile_picture_link)
+    try:
+        dmin = d["duration_min"]
+        duration_min = ifNull(dmin)
+    except:
+        duration_min = 0
 
     #------------------------------
 
     #------------------------------
 
-    project_fee_cents = ifNull(d["project_fee_cents"])
+    try:
+        cover_picture_link = ifNull(d["cover_picture_link"])
+        has_cover_pic = hasValue(cover_picture_link)
+    except:
+        has_cover_pic = 0
+
+    try:
+        profile_picture_link = ifNull(d["profile_picture_link"])
+        has_profile_pic = hasValue(profile_picture_link)
+    except:
+        has_profile_pic = 0
 
     #------------------------------
 
     #------------------------------
 
-    openings = ifNull(d["openings"])
+    try:
+        project_fee_cents = ifNull(d["project_fee_cents"])
+    except:
+        project_fee_cents = 0
 
     #------------------------------
-    created_at = d["created_at"]
-    application_close_date = d["application_close_date"]
-    earliest_start_date = d["earliest_start_date"]
-    latest_end_date = d["latest_end_date"]
+
+    #------------------------------
+
+    try:
+        openings = ifNull(d["openings"])
+    except:
+        openings = 1
+
+    #------------------------------
+    try:
+        created_at = ifStringEmpty(d["created_at"])
+    except:
+        created_at = ""
+
+    try:
+        application_close_date = ifStringEmpty(d["application_close_date"])
+    except:
+        application_close_date = ""
+
+    try:
+        earliest_start_date = ifStringEmpty(d["earliest_start_date"])
+    except:
+        earliest_start_date = ""
+
+    try:
+        latest_end_date = ifStringEmpty(d["latest_end_date"])
+    except:
+        latest_end_date = ""
 
     # Duration to apply for the internship: application_close_date - created_at
-    time_window_to_apply = dateDiff(application_close_date, created_at)
+    try:
+        time_window_to_apply = dateDiff(application_close_date, created_at)
+    except:
+        time_window_to_apply = 0
 
     # Duration available of the intership: latest_end_date - earliest_end_date
-    experience_max_duration = dateDiff(latest_end_date, earliest_start_date)
+    try:
+        experience_max_duration = dateDiff(latest_end_date, earliest_start_date)
+    except:
+        experience_max_duration = 0
 
     # Difference between created_at and earliest_start_date
-    created_vs_earliest_start = dateDiff(earliest_start_date, created_at)
+    try:
+        created_vs_earliest_start = dateDiff(earliest_start_date, created_at)
+    except:
+        created_vs_earliest_start = 0
 
     # Difference between lastest_end_date and created_at
-    created_vs_latest_end = dateDiff(latest_end_date, created_at)
+    try:
+        created_vs_latest_end = dateDiff(latest_end_date, created_at)
+    except:
+        created_vs_latest_end = 0
 
     # How rigid is the timeframe of the internship? (units: number of days)
-    experience_timeframe_rigidness = round((experience_max_duration / duration_min), 1)
+    try:
+        experience_timeframe_rigidness = round((experience_max_duration / duration_min), 1)
+    except:
+        experience_timeframe_rigidness = round((0), 1)
 
 
     #------------------------------
@@ -271,15 +317,26 @@ def matchability(d):
 
 
     #------------------------------
-    name_entity = d["name_entity"]
-    name_region = d["name_region"]
+    try:
+        name_entity = ifStringEmpty(d["name_entity"])
+    except:
+        name_entity = ""
+
+    try:
+        name_region = ifStringEmpty(d["name_region"])
+    except:
+        name_region = ""
+
     regions = {'Americas':0, 'Asia Pacific':0, 'Europe':0, 'Middle East and Africa':0}
     # HDI
     hdi = pd.read_csv('Data/hdi_gdp_2015.csv', low_memory=False)
     country = name_entity
-    country_code = lookup_country[country][1]
+    try:
+        country_code = lookup_country[country][1]
+    except:
+        country_code = ""
     hdi_array = hdi.loc[hdi['Code'] == country_code]['Historical Index of Human Development (including GDP metric) ((0-1; higher values are better))'].values
-    if hdi_array[0] != "":
+    if hdi_array and hdi_array[0] != "":
         hdi_index = hdi_array[0]
     else:
         hdi_index = 0.5
@@ -294,18 +351,30 @@ def matchability(d):
 
 
     #------------------------------
-    title_len = len(d["title"])
-    description_len = len(d["description"])
+    try:
+        title_len = len(d["title"])
+    except:
+        title_len = 0
+    try:
+        description_len = len(d["description"])
+    except:
+        description_len = 0
     #------------------------------
 
     #------------------------------
-    salary = ifNull(d["salary"])
+    try:
+        salary = ifNull(d["salary"])
+    except:
+        salary = 0
 
     #------------------------------
 
-
     #------------------------------
-    programme_id = ifNull(d["programme_id"])
+    try:
+        programme_id = ifNull(d["programme_id"])
+    except:
+        programme_id = 0
+
     # Programme id lookup
     #prog_dict = {1:"Global Volunteer", 2:"Global Talent", 5:"Global Entrepreneur"}
     prog_dict = {"1":0, "2":0, "5":0}
@@ -316,12 +385,26 @@ def matchability(d):
 
     #------------------------------
 
-
     #------------------------------
-    opp_background_req = d["opp_background_req"]
-    opp_background_pref = d["opp_background_pref"]
-    opp_skill_req = d["opp_skill_req"]
-    opp_skill_pref = d["opp_skill_pref"]
+    try:
+        opp_background_req = ifStringEmpty(d["opp_background_req"])
+    except:
+        opp_background_req = ""
+
+    try:
+        opp_background_pref = ifStringEmpty(d["opp_background_pref"])
+    except:
+        opp_background_pref = ""
+
+    try:
+        opp_skill_req = ifStringEmpty(d["opp_skill_req"])
+    except:
+        opp_skill_req = ""
+
+    try:
+        opp_skill_pref = ifStringEmpty(d["opp_skill_pref"])
+    except:
+        opp_skill_pref = ""
 
     background_skills_lst = [opp_background_req, opp_background_pref, opp_skill_req, opp_skill_pref]
     skills = ", ".join(background_skills_lst)
@@ -371,17 +454,35 @@ def matchability(d):
     #------------------------------
 
     #------------------------------
-    opp_language_req = d["opp_language_req"]
-    num_languages = len(opp_language_req.split(","))
+    try:
+        opp_language_req = ifStringEmpty(d["opp_language_req"])
+        num_languages = len(opp_language_req.split(","))
+    except:
+        num_languages = 0
 
     #------------------------------
 
     #------------------------------
 
-    logistics_info = d["logistics_info"]
-    specifics_info = d["specifics_info"]
-    legal_info = d["legal_info"]
-    role_info = d["role_info"]
+    try:
+        logistics_info = ifStringEmpty(d["logistics_info"])
+    except:
+        logistics_info = ""
+
+    try:
+        specifics_info = ifStringEmpty(d["specifics_info"])
+    except:
+        specifics_info = ""
+
+    try:
+        legal_info = ifStringEmpty(d["legal_info"])
+    except:
+        legal_info = ""
+
+    try:
+        role_info = ifStringEmpty(d["role_info"])
+    except:
+        role_info = ""
 
     try:
         insurance_info = legal_info[0]["health_insurance_info"]
@@ -491,6 +592,11 @@ def matchability(d):
                 'is_global_entrepreneur': is_global_entrepreneur
 
                 }
+
+    '''
+    for key, val in feat_dict.items():
+        print(key, ":", val)
+    '''
 
     data = []
     # append the features to the features list
