@@ -1,0 +1,10 @@
+# the large CSV files
+aiesec_opportunities_extracted.csv
+aiesec_applications_extracted.csv
+
+# the private key file
+intercom_scripts.pem
+
+.DS_Store
+
+__pycache__
