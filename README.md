@@ -90,6 +90,19 @@ and passing a JSON object in the following format:
 
 ```
 
+### API Response
+
+Here is an example JSON response returned by an API request using the dummy data shown above:
+
+```
+{   
+    'status': 'OK',
+    'output': 'True',
+    'value': 0.5926904761904762,
+    'timestamp': '2019-08-07 11:21:38.581200'
+}
+```
+
 ## Other file(s) and folder(s)
 
 ### API processing
