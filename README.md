@@ -90,6 +90,37 @@ and passing a JSON object in the following format:
 
 ```
 
+## Other file(s) and folder(s)
+
+### API processing
+```
+matchability.py
+```
+Handles the formatting and processing of the incoming data from the API request. Calls the model (locally saved as a Python pickle file) and returns the output as a JSON response.
+
+
+### SQL extraction
+```
+aiesec_opportunities_extraction.sql
+```
+```
+aiesec_applications_extraction.sql
+```
+
+### Data folder
+
+This folder holds a CSV file of the Human Development Indexes for every country from 2015. This is used as a reference table when training the model. It should be kept unchanged.
+
+Upon training the model, two CSV files are created/updated in this directory:
+```
+aiesec_opportunities_extracted.csv
+```
+```
+aiesec_applications_extracted.csv
+```
+They are simply the returned rows from the SQL data extraction.
+
+
 ## Authors
 
 * **Felix Simard** - *Initial work*
