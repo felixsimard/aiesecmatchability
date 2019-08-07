@@ -4,6 +4,9 @@ aiesec_applications_extracted.csv
 
 # the private key file
 intercom_scripts.pem
+matchability_api/venv
+matchability_api/db.sqlite3
+matchability_api/.idea
 
 .DS_Store
 
