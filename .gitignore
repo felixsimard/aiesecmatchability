@@ -7,6 +7,9 @@ intercom_scripts.pem
 matchability_api/venv
 matchability_api/db.sqlite3
 matchability_api/.idea
+matchability_api/log
+matchability_api/Gemfile.lock
+
 
 .DS_Store
 
