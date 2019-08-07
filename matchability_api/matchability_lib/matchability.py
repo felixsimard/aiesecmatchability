@@ -5,23 +5,25 @@ Returns the model outputs.
 
 '''
 
-import pandas as pd
-import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.cluster import KMeans
-from datetime import datetime
-import pickle
 import json
+import pickle
 import re
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+
 
 # Returns the difference between two dates
-def dateDiff(date1, date2): # date1 and date2 come in as Strings
+def dateDiff(date1, date2):  # date1 and date2 come in as Strings
     diff = pd.to_datetime(date1) - pd.to_datetime(date2)
-    diff = diff / np.timedelta64(1,'D')
+    diff = diff / np.timedelta64(1, 'D')
     if str(diff) == "nan" or str(diff) == "NaN":
         return 0
     else:
         return diff
+
 
 def hasValue(x):
     if x != None and x != 0 and type(x) != float and str(x) != "" and str(x) != "NaN" and str(x) != "nan":
@@ -29,11 +31,13 @@ def hasValue(x):
     else:
         return 0
 
+
 def ifStringEmpty(x):
     if x == None or x == "":
         return ""
     else:
         return x
+
 
 def ifNull(x):
     if x == None:
@@ -41,11 +45,15 @@ def ifNull(x):
     else:
         return x
 
+
 def replaceWords(x):
-    mapping = [('Not compulsory', 'replaced_words'), ('not compulsory', 'replaced_words'), ('Not mandatory', 'replaced_words'), ('not mandatory', 'replaced_words'), ('Not needed', 'replaced_words'), ('not_needed', 'replaced_words')]
+    mapping = [('Not compulsory', 'replaced_words'), ('not compulsory', 'replaced_words'),
+               ('Not mandatory', 'replaced_words'), ('not mandatory', 'replaced_words'),
+               ('Not needed', 'replaced_words'), ('not_needed', 'replaced_words')]
     for k, v in mapping:
         x = x.replace(k, v)
     return x
+
 
 def setTransportationCovered(x):
     txt = x.strip()
@@ -53,6 +61,7 @@ def setTransportationCovered(x):
         return 1
     else:
         return 0
+
 
 def setNumMeals(x):
     if type(x) == float or str(x) == "" or x == "Not covered" or x == "0":
@@ -216,16 +225,16 @@ lookup_country['Mali'] = ['Africa', 'MLI']
 def matchability(d):
     ### FETCH + FORMAT VARIABLES ###
 
-    #------------------------------
+    # ------------------------------
     try:
         dmin = d["duration_min"]
         duration_min = ifNull(dmin)
     except:
         duration_min = 0
 
-    #------------------------------
+    # ------------------------------
 
-    #------------------------------
+    # ------------------------------
 
     try:
         cover_picture_link = ifNull(d["cover_picture_link"])
@@ -239,25 +248,25 @@ def matchability(d):
     except:
         has_profile_pic = 0
 
-    #------------------------------
+    # ------------------------------
 
-    #------------------------------
+    # ------------------------------
 
     try:
         project_fee_cents = ifNull(d["project_fee_cents"])
     except:
         project_fee_cents = 0
 
-    #------------------------------
+    # ------------------------------
 
-    #------------------------------
+    # ------------------------------
 
     try:
         openings = ifNull(d["openings"])
     except:
         openings = 1
 
-    #------------------------------
+    # ------------------------------
     try:
         created_at = ifStringEmpty(d["created_at"])
     except:
@@ -308,8 +317,7 @@ def matchability(d):
     except:
         experience_timeframe_rigidness = round((0), 1)
 
-
-    #------------------------------
+    # ------------------------------
     # year completion ratio
     month = str(earliest_start_date).split('-')
     try:
@@ -320,10 +328,9 @@ def matchability(d):
     except:
         year_completion_ratio = 0.00
 
-    #------------------------------
+    # ------------------------------
 
-
-    #------------------------------
+    # ------------------------------
     try:
         name_entity = ifStringEmpty(d["name_entity"])
     except:
@@ -334,15 +341,16 @@ def matchability(d):
     except:
         name_region = ""
 
-    regions = {'Americas':0, 'Asia Pacific':0, 'Europe':0, 'Middle East and Africa':0}
+    regions = {'Americas': 0, 'Asia Pacific': 0, 'Europe': 0, 'Middle East and Africa': 0}
     # HDI
-    hdi = pd.read_csv('Data/hdi_gdp_2015.csv', low_memory=False)
+    hdi = pd.read_csv('matchability_lib/Data/hdi_gdp_2015.csv', low_memory=False)
     country = name_entity
     try:
         country_code = lookup_country[country][1]
     except:
         country_code = ""
-    hdi_array = hdi.loc[hdi['Code'] == country_code]['Historical Index of Human Development (including GDP metric) ((0-1; higher values are better))'].values
+    hdi_array = hdi.loc[hdi['Code'] == country_code][
+        'Historical Index of Human Development (including GDP metric) ((0-1; higher values are better))'].values
     if hdi_array and hdi_array[0] != "":
         hdi_index = hdi_array[0]
     else:
@@ -354,10 +362,9 @@ def matchability(d):
     is_europe = regions["Europe"]
     is_middle_east_africa = regions["Middle East and Africa"]
 
-    #------------------------------
+    # ------------------------------
 
-
-    #------------------------------
+    # ------------------------------
     try:
         title_len = len(d["title"])
     except:
@@ -366,33 +373,33 @@ def matchability(d):
         description_len = len(d["description"])
     except:
         description_len = 0
-    #------------------------------
+    # ------------------------------
 
-    #------------------------------
+    # ------------------------------
     try:
         salary = ifNull(d["salary"])
     except:
         salary = 0
 
-    #------------------------------
+    # ------------------------------
 
-    #------------------------------
+    # ------------------------------
     try:
         programme_id = ifNull(d["programme_id"])
     except:
         programme_id = 0
 
     # Programme id lookup
-    #prog_dict = {1:"Global Volunteer", 2:"Global Talent", 5:"Global Entrepreneur"}
-    prog_dict = {"1":0, "2":0, "5":0}
+    # prog_dict = {1:"Global Volunteer", 2:"Global Talent", 5:"Global Entrepreneur"}
+    prog_dict = {"1": 0, "2": 0, "5": 0}
     prog_dict[str(programme_id)] = 1
     is_global_volunteer = prog_dict["1"]
     is_global_talent = prog_dict["2"]
     is_global_entrepreneur = prog_dict["5"]
 
-    #------------------------------
+    # ------------------------------
 
-    #------------------------------
+    # ------------------------------
     try:
         opp_background_req = ifStringEmpty(d["opp_background_req"])
     except:
@@ -421,11 +428,11 @@ def matchability(d):
     ### K-MEANS for JOB DESCRIPTION ###
 
     # Load the kmeans pickle
-    km = pickle.load(open("pickles/kmeans.pickle", 'rb'))
+    km = pickle.load(open("matchability_lib/pickles/kmeans.pickle", 'rb'))
 
-    vec = pickle.load(open("pickles/vectorizer.pickle", 'rb'))
+    vec = pickle.load(open("matchability_lib/pickles/vectorizer.pickle", 'rb'))
 
-    cluster_terms = pickle.load(open("pickles/cluster_terms.pickle", 'rb'))
+    cluster_terms = pickle.load(open("matchability_lib/pickles/cluster_terms.pickle", 'rb'))
 
     vectorizer = TfidfVectorizer()
     skills_vec = vec.transform(skills_df.skills)
@@ -435,13 +442,12 @@ def matchability(d):
     # setup a dictionary
     clusters_dict = {}
     for ind in range(len(cluster_terms)):
-        key = "cl"+str(ind+1)
+        key = "cl" + str(ind + 1)
         clusters_dict[key] = [cluster_terms[ind], 0]
 
     # one-hot the proper cluster
-    key = "cl"+str(int(y)+1)
+    key = "cl" + str(int(y) + 1)
     clusters_dict[key] = [cluster_terms[int(y)], 1]
-
 
     cl1 = clusters_dict["cl1"][1]
     cl2 = clusters_dict["cl2"][1]
@@ -458,18 +464,18 @@ def matchability(d):
 
     num_backgrounds = len(opp_background_req.split(','))
 
-    #------------------------------
+    # ------------------------------
 
-    #------------------------------
+    # ------------------------------
     try:
         opp_language_req = ifStringEmpty(d["opp_language_req"])
         num_languages = len(opp_language_req.split(","))
     except:
         num_languages = 0
 
-    #------------------------------
+    # ------------------------------
 
-    #------------------------------
+    # ------------------------------
 
     try:
         logistics_info = ifStringEmpty(d["logistics_info"])
@@ -519,7 +525,6 @@ def matchability(d):
     except:
         is_transportation_covered = 0
 
-
     # Food weekends
     try:
         f_weekends = logistics_info[0]["food_weekends"]
@@ -549,56 +554,56 @@ def matchability(d):
     except:
         computer = 0
 
-    #------------------------------
+    # ------------------------------
 
     # Now predict the output
 
     # Open the model
-    model = pickle.load(open("pickles/matcha_model.pickle", 'rb'))
+    model = pickle.load(open("matchability_lib/pickles/matcha_model.pickle", 'rb'))
 
     # Load the considered features
-    features = pickle.load(open("pickles/features.pickle", 'rb'))
+    features = pickle.load(open("matchability_lib/pickles/features.pickle", 'rb'))
 
     # features dictionary
     feat_dict = {
 
-                'openings': openings,
-                'duration_min': duration_min,
-                'application_open_window': time_window_to_apply,
-                'experience_max_duration': experience_max_duration,
-                'created_vs_earliest_start': created_vs_earliest_start,
-                'created_vs_latest_end': created_vs_latest_end,
-                'experience_timeframe_rigidness': experience_timeframe_rigidness,
+        'openings': openings,
+        'duration_min': duration_min,
+        'application_open_window': time_window_to_apply,
+        'experience_max_duration': experience_max_duration,
+        'created_vs_earliest_start': created_vs_earliest_start,
+        'created_vs_latest_end': created_vs_latest_end,
+        'experience_timeframe_rigidness': experience_timeframe_rigidness,
 
-                'title_len': title_len,
-                'description_len': description_len,
-                'num_languages': num_languages,
-                'salary': salary,
+        'title_len': title_len,
+        'description_len': description_len,
+        'num_languages': num_languages,
+        'salary': salary,
 
-                'num_skills': num_skills,
-                'num_backgrounds': num_backgrounds,
-                'has_cover_pic': has_cover_pic,
-                'has_profile_pic': has_profile_pic,
-                'computer': computer,
-                'expected_work_schedule': expected_work_schedule,
+        'num_skills': num_skills,
+        'num_backgrounds': num_backgrounds,
+        'has_cover_pic': has_cover_pic,
+        'has_profile_pic': has_profile_pic,
+        'computer': computer,
+        'expected_work_schedule': expected_work_schedule,
 
-                'accommodation_covered': accommodation_covered,
-                'food_weekends': food_weekends,
-                'health_insurance_needed': health_insurance_needed,
-                'is_transportation_covered': is_transportation_covered,
-                'num_meals': num_meals,
+        'accommodation_covered': accommodation_covered,
+        'food_weekends': food_weekends,
+        'health_insurance_needed': health_insurance_needed,
+        'is_transportation_covered': is_transportation_covered,
+        'num_meals': num_meals,
 
-                'is_americas': is_americas,
-                'is_asia_pacific': is_asia_pacific,
-                'is_europe': is_europe,
-                'is_middle_east_africa': is_middle_east_africa,
-                'hdi': hdi_index,
-                'year_completion_ratio': year_completion_ratio,
-                'is_global_volunteer': is_global_volunteer,
-                'is_global_talent': is_global_talent,
-                'is_global_entrepreneur': is_global_entrepreneur
+        'is_americas': is_americas,
+        'is_asia_pacific': is_asia_pacific,
+        'is_europe': is_europe,
+        'is_middle_east_africa': is_middle_east_africa,
+        'hdi': hdi_index,
+        'year_completion_ratio': year_completion_ratio,
+        'is_global_volunteer': is_global_volunteer,
+        'is_global_talent': is_global_talent,
+        'is_global_entrepreneur': is_global_entrepreneur
 
-                }
+    }
 
     '''
     for key, val in feat_dict.items():
@@ -625,7 +630,8 @@ def matchability(d):
 
     # get current timestamp
     timestamp = str(datetime.now())
-    res_as_dict = { 'status':'OK', 'output':str(output), 'value':prob, 'timestamp':timestamp } # make sure the boolean values in the dict are strings
+    res_as_dict = {'status': 'OK', 'output': str(output), 'value': prob,
+                   'timestamp': timestamp}  # make sure the boolean values in the dict are strings
     res_as_json = json.dumps(res_as_dict)
 
     return res_as_json

@@ -14,7 +14,7 @@ namespace :deploy do
      task :create_virtual_env do
           on roles(:app, :db) do
                within release_path do
-                    execute "cd #{release_path}; virtualenv -p python3 matchability_api/env"
+                    execute "cd #{release_path}/matchability_api; virtualenv -p python3 env"
                end
           end
      end
@@ -22,8 +22,8 @@ namespace :deploy do
      task :install_requirements do
           on roles(:app, :db) do
                within release_path do
-                    execute "cd #{release_path}; source matchability_api/env/bin/activate; pip install --upgrade pip"
-                    execute "cd #{release_path}; source matchability_api/env/bin/activate; pip install -r matchability_api/requirements.txt"
+                    execute "cd #{release_path}/matchability_api; source env/bin/activate; pip install --upgrade pip"
+                    execute "cd #{release_path}/matchability_api; source env/bin/activate; pip install -r requirements.txt"
 
                end
           end
@@ -32,7 +32,7 @@ namespace :deploy do
      task :install_uwsgi do
           on roles(:app) do
                within release_path do
-                    execute "cd #{release_path}; source matchability_api/env/bin/activate; pip install uwsgi"
+                    execute "cd #{release_path}/matchability_api; source env/bin/activate; pip install uwsgi"
                end
           end
      end
@@ -40,7 +40,7 @@ namespace :deploy do
      task :stop_uwsgi do
           on roles(:app) do
                within release_path do
-                    execute "cd #{release_path}; source matchability_api/env/bin/activate; uwsgi --stop /tmp/matchability_api-master-uwsgi.pid || true"
+                    execute "cd #{release_path}/matchability_api; source env/bin/activate; uwsgi --stop /tmp/matchability_api-master-uwsgi.pid || true"
                end
           end
      end
@@ -48,7 +48,7 @@ namespace :deploy do
      task :run_migrations do
           on roles(:db) do
                within release_path do
-                    execute "cd #{release_path}; source matchability_api/env/bin/activate; ./matchability_api/manage.py migrate"
+                    execute "cd #{release_path}/matchability_api; source env/bin/activate; ./manage.py migrate"
                end
           end
      end
@@ -56,7 +56,7 @@ namespace :deploy do
      task :start_uwsgi do
           on roles(:app) do
                within release_path do
-                    execute "cd #{release_path}; source matchability_api/env/bin/activate; uwsgi --module core.wsgi --http-socket 127.0.0.1:5000 --master --processes 2 --daemonize /var/log/uwsgi/matchability_api.log --pidfile /tmp/matchability_api-master-uwsgi.pid"
+                    execute "cd #{release_path}/matchability_api; source env/bin/activate; uwsgi --module matchability_api.wsgi --http-socket 127.0.0.1:5000 --master --processes 2 --daemonize /var/log/uwsgi/matchability_api.log --pidfile /tmp/matchability_api-master-uwsgi.pid"
                end
           end
      end

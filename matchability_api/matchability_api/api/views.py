@@ -6,7 +6,7 @@ from matchability_lib.matchability import matchability
 
 
 @api_view(['GET', 'POST'])
-def hello_world(request):
+def opportunity_matchability(request):
     if request.method == 'GET':
         return Response({"message": "Hello, world!"})
         # return Response(request.data)

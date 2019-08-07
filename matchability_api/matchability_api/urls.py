@@ -17,12 +17,12 @@ from django.conf.urls import url
 from django.urls import path, include
 from rest_framework import routers
 
-from matchability_api.api.views import hello_world
+from matchability_api.api.views import opportunity_matchability
 
 router = routers.DefaultRouter()
 
 urlpatterns = [
-    path('hello/', hello_world),
+    path('api/opportunity', opportunity_matchability),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^', include(router.urls)),
 ]
