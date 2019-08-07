@@ -11,16 +11,18 @@ Simple guide to train and run the opportunity matchability API.
 Make sure sure the server/database's private key file is included in the same directory as matcha.py under the name:
 
 ```
-# intercom_scripts.pem
+intercom_scripts.pem
 ```
 
 ### Training the model
 
 Train the model by running the Python file:
 ```
-# matcha.py
+matcha.py
 ```
 Note: training the model can take up to 15 minutes.
+
+Tip: Re-train the model every month or so.
 
 
 ### Running the model
@@ -28,7 +30,7 @@ Note: training the model can take up to 15 minutes.
 Open port 5000 on your server and run the process named:
 
 ```
-# matcha_api.py
+matcha_api.py
 ```
 
 To make a request to the API, simply make a POST request to the following URL:
