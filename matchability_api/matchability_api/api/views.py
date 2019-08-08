@@ -11,5 +11,8 @@ def opportunity_matchability(request):
         return Response({"message": "Hello, world!"})
         # return Response(request.data)
     elif request.method == 'POST':
-        return Response(matchability(request.data))
-        return Response(request.data)
+        res = request.data["data"]
+        for key, val in res.items():
+            print(key, val)
+
+        return Response(matchability(request.data['data']))

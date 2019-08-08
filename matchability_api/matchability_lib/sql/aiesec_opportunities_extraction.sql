@@ -119,4 +119,6 @@ LEFT JOIN
                                               sub.type_name ) AS sub2
                    GROUP BY sub2.repr_id
                    ORDER BY sub2.repr_id ) AS sub_jd_pref
-ON        "public"."opportunities".id = sub_jd_pref.repr_id LIMIT 60000;
+ON        "public"."opportunities".id = sub_jd_pref.repr_id
+
+WHERE ("public"."opportunities".created_at BETWEEN (now() - INTERVAL '36 MONTH') AND (now() - INTERVAL '4 MONTH'))  LIMIT 100000;

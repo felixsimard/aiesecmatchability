@@ -317,7 +317,8 @@ localhost = '127.0.0.1'
 ip = '207.107.68.234'
 remote_host = 'gisapi-production-aurora.cluster-ro-csrm8v3e6d8r.eu-west-1.rds.amazonaws.com'
 ssh_username = 'ec2-user'
-ssh_private_key = 'intercom_scripts.pem'
+#ssh_private_key = '/Users/felixsimard/OneDrive - McGill University/Personal/SeedAISummer2019/matchability/matchability_api/matchability_lib/intercom_scripts.pem'
+ssh_private_key = '/root/core-bot/intercom_scripts.pem'
 
 # db variables
 user = 'gisapi_prod'
@@ -354,10 +355,11 @@ print("Total opportunities:", len(opps), "\n")
 
 print("---------------------------------------------------------------", "\n")
 
-print("Dropping duplicate rows.", "\n")
-opps = opps.drop_duplicates(subset=['opportunity_id'])
+#print("Dropping duplicate rows.", "\n")
+#opps = opps.drop_duplicates(subset=['opportunity_id'])
+
 print("Total opportunities:", len(opps), "\n")
-opps = opps[:50000]
+opps = opps[:100000]
 apps = apps.loc[apps['an_status'] == "accepted"]
 print("Total opportunities:", len(opps), "\n")
 print("Total 'accepted' applications:", len(apps), "\n")
@@ -964,10 +966,10 @@ centers = kmeans_groups.cluster_centers_
 labels = kmeans_groups.predict(X)
 
 # Save vectorizer object as Python pickle
-pickle.dump(vec, open("matchability_lib/pickles/vectorizer.pickle", 'wb'))
+pickle.dump(vec, open("pickles/vectorizer.pickle", 'wb'))
 
 # Save kmeans object as Python pickle
-pickle.dump(kmeans_groups, open("matchability_lib/pickles/kmeans.pickle", 'wb'))
+pickle.dump(kmeans_groups, open("pickles/kmeans.pickle", 'wb'))
 
 print("Fetching top words per clusters.", "\n")
 order_centroids = kmeans_groups.cluster_centers_.argsort()[:, ::-1]
@@ -998,7 +1000,7 @@ for i in range(len(columns_name_list)):
 
 
 # Save cluster terms object as Python pickle
-pickle.dump(columns_name_list, open("matchability_lib/pickles/cluster_terms.pickle", 'wb'))
+pickle.dump(columns_name_list, open("pickles/cluster_terms.pickle", 'wb'))
 
 columns_name_list.append("opportunity_id")
 
@@ -1187,7 +1189,7 @@ for feat in features:
 
 
 # Save features object as Python pickle
-pickle.dump(X_train.columns, open("matchability_lib/pickles/features.pickle", 'wb'))
+pickle.dump(X_train.columns, open("pickles/features.pickle", 'wb'))
 
 print("Training model...")
 
@@ -1312,11 +1314,13 @@ except Exception as e:
     print("Sorry, an error occurred while training the model (Decision Tree Classifier). Please re-run the program again.")
     print("Error:", e, "\n")
 
+'''
 print("Visualizing the decision tree. This will open a new window with a PDF image of the decision tree.", "\n")
 dot_data = StringIO()
 dot_data = tree.export_graphviz(model, out_file=None, feature_names=X_train.columns, leaves_parallel=True, filled=True, rounded=True, special_characters=True)
 graph = graphviz.Source(dot_data)
 graph.view()
+'''
 
 
 ### MODEL ANALYSIS FOR DECISION TREE ###
@@ -1402,10 +1406,10 @@ try:
     model.fit(X_train.astype(float), y_train.astype(float))
 
     # Save model as python pickle
-    pickle.dump(model, open("matchability_lib/pickles/matcha_model.pickle", 'wb'))
+    pickle.dump(model, open("pickles/matcha_model.pickle", 'wb'))
 
     # Save testing columns names as pickle
-    pickle.dump(features, open("matchability_lib/pickles/matcha_columns.pickle", "wb"))
+    pickle.dump(features, open("pickles/matcha_columns.pickle", "wb"))
 
     # predict on testing data
     #predictions_tree = model.predict(X_test.astype(float)) # change X_train for X_test

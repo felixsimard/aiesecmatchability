@@ -1,6 +1,6 @@
 # the large CSV files
-aiesec_opportunities_extracted.csv
-aiesec_applications_extracted.csv
+matchability_api/matchability_lib/Data/aiesec_opportunities_extracted.csv
+matchability_api/matchability_lib/Data/aiesec_applications_extracted.csv
 
 # the private key file
 intercom_scripts.pem
@@ -9,7 +9,6 @@ matchability_api/db.sqlite3
 matchability_api/.idea
 matchability_api/log
 matchability_api/Gemfile.lock
-
 
 .DS_Store
 
