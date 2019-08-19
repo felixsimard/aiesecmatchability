@@ -10,7 +10,7 @@ import numpy as np
 import sshtunnel
 import math
 import matplotlib.pyplot as plt
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import psycopg2
 import statsmodels.api as sm
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -1462,10 +1462,24 @@ plt.show()
 # Test Model on testing data
 # Need to reformat the predictions and y values first
 y_test = y_test.reset_index(drop=True)
-
+score = ((predictions_forest_series>0.5) == y_test).mean()
 print("------------------------------------")
-print("Random Forest Score:", ((predictions_forest_series>0.5) == y_test).mean())
+print("Random Forest Score:", score)
 print("------------------------------------", "\n")
+
+### OUTPUT TEXT FILE ###
+f = open(r"Resources/model_output.txt", "a")
+
+model_status = "Model trained successfully. \n"
+model_score = "Score: "+str(score)+"\n"
+model_trained_date = str(datetime.now())+"\n"
+text = [model_status, model_score, model_trained_date, "\n"]
+for t in text:
+    f.write(t)
+
+f.close()
+
+###
 
 
 print("Creating new dataframe for predictions of matched opportunities.", "\n")
