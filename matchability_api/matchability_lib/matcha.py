@@ -322,7 +322,9 @@ ssh_private_key = '/root/core-bot/intercom_scripts.pem'
 
 # db variables
 user = 'gisapi_prod'
-password = 'RQUTA5S8JPTMpbpK'
+password = '7Src3pPn8t2d'
+# old password: RQUTA5S8JPTMpbpK
+# new password: 7Src3pPn8t2d
 database = 'gisapi_prod_production'
 
 # Run the extraction queries and save to CSVs
