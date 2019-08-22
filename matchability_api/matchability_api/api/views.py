@@ -12,7 +12,4 @@ def opportunity_matchability(request):
         # return Response(request.data)
     elif request.method == 'POST':
         res = request.data["data"]
-        for key, val in res.items():
-            print(key, val)
-
-        return Response(matchability(request.data['data']))
+        return Response(matchability(res))

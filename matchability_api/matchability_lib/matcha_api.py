@@ -6,14 +6,13 @@ Receiving POST request and returning predictions.
 '''
 
 from flask import Flask, request
-import json
 # import our integration
 from matchability import matchability
 
-app = Flask(__name__) # create the Flask app
+app = Flask(__name__)  # create the Flask app
+
 
 @app.route('/api/opportunity', methods=['GET', 'POST'])
-
 def matcha_request():
     if request.method == "POST":
         req_data = request.get_json()
@@ -24,6 +23,7 @@ def matcha_request():
 
     else:
         return "Error: Method not allowed. Please use POST request."
+
 
 # Run the app on port 5000
 app.run(port=5000)

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'matchability_api.api.apps.ApiConfig',
     'rest_framework',
+    'django_cron',
 ]
 
 MIDDLEWARE = [
@@ -115,3 +116,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+CRON_CLASSES = [
+    'matchability_api.api.cron.TrainModel'
+
+]
