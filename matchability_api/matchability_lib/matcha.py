@@ -386,7 +386,7 @@ print(len(opps.loc[opps['openings'].apply(lambda x : x == 0)]), "rows ignored.",
 opps = opps.loc[opps['openings'].apply(lambda x : x != 0)]
 
 # replacing possible infinite values
-print("Replacing possible inifite values.", "\n")
+print("Replacing possible infinite values.", "\n")
 opps = opps.replace([np.inf, -np.inf, "nan", "NaN"], 0)
 #opps.dropna(inplace=True)
 
