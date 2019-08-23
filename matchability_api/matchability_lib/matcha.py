@@ -333,13 +333,15 @@ print("SQL Data Extraction.")
 
 tic = time.time()
 # Fetch the opportunities
-opps = execute_sql("sql/aiesec_opportunities_extraction.sql", "aiesec_opportunities_extracted.csv")
+# old path: sql/aiesec_opportunities_extraction.sql
+opps = execute_sql("/root/matchability_api/current/matchability_api/matchability_lib/sql/aiesec_opportunities_extraction.sql", "aiesec_opportunities_extracted.csv")
 toc = time.time()
 print("Opportunities data extraction took:", round((toc-tic), 2), "seconds")
 
 # Fetch the applications
+# old path: sql/aiesec_applications_extraction.sql
 tic = time.time()
-apps = execute_sql("sql/aiesec_applications_extraction.sql", "aiesec_applications_extracted.csv")
+apps = execute_sql("/root/matchability_api/current/matchability_api/matchability_lib/sql/aiesec_applications_extraction.sql", "aiesec_applications_extracted.csv")
 toc = time.time()
 print("Applications data extraction took:", round((toc-tic), 2), "seconds")
 
