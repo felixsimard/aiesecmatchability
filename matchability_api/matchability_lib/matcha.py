@@ -5,43 +5,44 @@ Data extraction, cleaning, formatting and model training.
 
 '''
 
-import pandas as pd
+import warnings;
+from datetime import timedelta, datetime
+
 import numpy as np
-import sshtunnel
-import math
-import matplotlib.pyplot as plt
-from datetime import date, timedelta, datetime
+import pandas as pd
 import psycopg2
+import sshtunnel
 import statsmodels.api as sm
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.metrics import roc_curve, auc, roc_auc_score
 from sklearn import tree
-from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
-from sklearn.externals.six import StringIO
 from sklearn.ensemble import RandomForestClassifier
-import warnings; warnings.simplefilter('ignore')
-import graphviz
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.metrics import roc_curve, auc
+from sklearn.model_selection import train_test_split
+
+warnings.simplefilter('ignore')
 import time
 import pickle
 import re
-
 
 print("\n")
 print("###------------------- AIESEC Matchability Modelling ---------------------###")
 print("###----------------------------------------------------------------------###", "\n")
 
-#----------------------- HELPER FUNCTIONS --------------------------------###
+
+# ----------------------- HELPER FUNCTIONS --------------------------------###
 
 # Simple ratio function
 def ratio(numerator, denominator):
     return (numerator / denominator) * 100
+
 
 # Removing rows from a Pandas Dataframe
 def removeRows(data, column, indexes_unwanted):
     data = data.drop(indexes_unwanted, axis=0)
     print("Removed", len(indexes_unwanted), "rows.")
     return data
+
 
 # Function to parse the dates of a specified column and get the badly formatted dates to be cleaned
 def scanDates(data, column):
@@ -63,6 +64,7 @@ def scanDates(data, column):
 
     return bad_dates_indexes
 
+
 # Date cleaner function
 def cleanDates(data, column, bad_dates):
     for index in bad_dates:
@@ -82,9 +84,9 @@ def cleanDates(data, column, bad_dates):
 
 
 # Returns the difference between two dates
-def dateDiff(date1, date2): # date1 and date2 come in as Strings
+def dateDiff(date1, date2):  # date1 and date2 come in as Strings
     diff = pd.to_datetime(date1) - pd.to_datetime(date2)
-    diff = diff / np.timedelta64(1,'D')
+    diff = diff / np.timedelta64(1, 'D')
     return diff
     '''
         if not diff.empty:
@@ -94,6 +96,7 @@ def dateDiff(date1, date2): # date1 and date2 come in as Strings
         return diff
     '''
 
+
 # Getting the value of a Pandas Series
 def getSeriesValue(data, column):
     if len(data[column]) > 0:
@@ -102,15 +105,15 @@ def getSeriesValue(data, column):
         return np.nan
 
 
- # Database connection function
+# Database connection function
 def execute_sql(filename, csv_name):
     try:
         with sshtunnel.SSHTunnelForwarder(
-            (host, 22),
-            ssh_private_key = ssh_private_key,
-            ssh_username = ssh_username,
-            remote_bind_address = (remote_host, 5432),
-            local_bind_address = (localhost, 5430)) as server:
+                (host, 22),
+                ssh_private_key=ssh_private_key,
+                ssh_username=ssh_username,
+                remote_bind_address=(remote_host, 5432),
+                local_bind_address=(localhost, 5430)) as server:
             server.start()
             print("\n")
             print("Server connected.", "\n")
@@ -146,8 +149,8 @@ def execute_sql(filename, csv_name):
             print("Query OK.", len(df), "rows found.")
 
             # save results dataframe to CSV
-            print("Saving results to", "Data/"+csv_name)
-            df.to_csv("Data/"+csv_name)
+            print("Saving results to", "Data/" + csv_name)
+            df.to_csv("Data/" + csv_name)
 
             return df
 
@@ -317,7 +320,7 @@ localhost = '127.0.0.1'
 ip = '207.107.68.234'
 remote_host = 'gisapi-production-aurora.cluster-ro-csrm8v3e6d8r.eu-west-1.rds.amazonaws.com'
 ssh_username = 'ec2-user'
-#ssh_private_key = '/Users/felixsimard/OneDrive - McGill University/Personal/SeedAISummer2019/matchability/matchability_api/matchability_lib/intercom_scripts.pem'
+# ssh_private_key = '/Users/felixsimard/OneDrive - McGill University/Personal/SeedAISummer2019/matchability/matchability_api/matchability_lib/intercom_scripts.pem'
 ssh_private_key = '/root/core-bot/intercom_scripts.pem'
 
 # db variables
@@ -333,16 +336,19 @@ print("SQL Data Extraction.")
 
 tic = time.time()
 # Fetch the opportunities
-opps = execute_sql("sql/aiesec_opportunities_extraction.sql", "aiesec_opportunities_extracted.csv")
+opps = execute_sql(
+    "/root/matchability_api/current/matchability_api/matchability_lib/sql/aiesec_opportunities_extraction.sql",
+    "aiesec_opportunities_extracted.csv")
 toc = time.time()
-print("Opportunities data extraction took:", round((toc-tic), 2), "seconds")
+print("Opportunities data extraction took:", round((toc - tic), 2), "seconds")
 
 # Fetch the applications
 tic = time.time()
-apps = execute_sql("sql/aiesec_applications_extraction.sql", "aiesec_applications_extracted.csv")
+apps = execute_sql(
+    "/root/matchability_api/current/matchability_api/matchability_lib/sql/aiesec_applications_extraction.sql",
+    "aiesec_applications_extracted.csv")
 toc = time.time()
-print("Applications data extraction took:", round((toc-tic), 2), "seconds")
-
+print("Applications data extraction took:", round((toc - tic), 2), "seconds")
 
 ###----------------------------------------------------------------------###
 
@@ -357,8 +363,8 @@ print("Total opportunities:", len(opps), "\n")
 
 print("---------------------------------------------------------------", "\n")
 
-#print("Dropping duplicate rows.", "\n")
-#opps = opps.drop_duplicates(subset=['opportunity_id'])
+# print("Dropping duplicate rows.", "\n")
+# opps = opps.drop_duplicates(subset=['opportunity_id'])
 
 print("Total opportunities:", len(opps), "\n")
 opps = opps[:100000]
@@ -378,17 +384,17 @@ print("###---------------------- DATA CLEANING + TRIMMING ----------------------
 limit = 500
 print("Applying 500 openings threshold to opportunities.")
 print(len(opps.loc[opps['openings'] > limit]), "rows ignored.", "\n")
-opps = opps.loc[opps['openings'].apply(lambda x : x <= limit)]
+opps = opps.loc[opps['openings'].apply(lambda x: x <= limit)]
 
 # also ignore the opportunities with 0 openings
 print("Ignore opportunities having 0 openings.")
-print(len(opps.loc[opps['openings'].apply(lambda x : x == 0)]), "rows ignored.", "\n")
-opps = opps.loc[opps['openings'].apply(lambda x : x != 0)]
+print(len(opps.loc[opps['openings'].apply(lambda x: x == 0)]), "rows ignored.", "\n")
+opps = opps.loc[opps['openings'].apply(lambda x: x != 0)]
 
 # replacing possible infinite values
 print("Replacing possible inifite values.", "\n")
 opps = opps.replace([np.inf, -np.inf, "nan", "NaN"], 0)
-#opps.dropna(inplace=True)
+# opps.dropna(inplace=True)
 
 # finally, ignore the opportunities where status was not 'open'
 print("Ignore opportunities with status != 'open'.")
@@ -427,14 +433,15 @@ print("###-------------------------- DATA MANIPULATIONS -----------------------#
 
 # Merge the skills columns together for k-means later
 try:
-    opps['skills'] = opps[['opp_skill_req', 'opp_skill_pref', 'opp_background_req', 'opp_background_pref']].apply(lambda x: ','.join(x[x.notnull()]), axis = 1)
+    opps['skills'] = opps[['opp_skill_req', 'opp_skill_pref', 'opp_background_req', 'opp_background_pref']].apply(
+        lambda x: ','.join(x[x.notnull()]), axis=1)
 except Exception as e:
     pass;
 
 # We can now drop the individual skill columns
 try:
     pass
-    #opps = opps.drop(columns=['opp_skill_req', 'opp_skill_pref', 'opp_background_req', 'opp_background_pref', 'opp_language_pref', 'matched_or_rejected_at', 'experience_start_date', 'experience_end_date', 'status'])
+    # opps = opps.drop(columns=['opp_skill_req', 'opp_skill_pref', 'opp_background_req', 'opp_background_pref', 'opp_language_pref', 'matched_or_rejected_at', 'experience_start_date', 'experience_end_date', 'status'])
 except Exception as e:
     print("Error dropping irrelevant columns:", e, "\n")
 
@@ -459,15 +466,14 @@ for index, row in opps.iterrows():
     year_str = str(opp_year)
     if year_str == "" or year_str == "nan" or year_str == "NaN":
         year_str = "2018"
-    hot_zone_start = year_str+'-07-01 00:00:00';
-    hot_zone_end = year_str+'-08-31 00:00:00';
+    hot_zone_start = year_str + '-07-01 00:00:00';
+    hot_zone_end = year_str + '-08-31 00:00:00';
     hot_days_list = []
     for hot_day in range(0, 31):
         hot_day_datetime = pd.to_datetime(hot_zone_start)
         hot_days_list.append(hot_day_datetime)
         hot_day_datetime += timedelta(days=1)
         hot_zone_start = hot_day_datetime
-
 
     # New variables of interest
 
@@ -512,7 +518,7 @@ for index, row in opps.iterrows():
 
     # build the row to be appended
     df_data = [opp_id, accepted_count, time_window_to_apply, experience_max_duration, created_vs_earliest_start,
-              created_vs_latest_end, experience_timeframe_rigidness, hot_days_intersection, popular_time_period_factor]
+               created_vs_latest_end, experience_timeframe_rigidness, hot_days_intersection, popular_time_period_factor]
 
     # construct the dataframe to be concatenated to the main dataframe
     df = pd.DataFrame([df_data], columns=extra_cols_df.columns)
@@ -524,14 +530,17 @@ opps = pd.merge(opps, extra_cols_df, how='right', on='opportunity_id')
 
 print("Done adding new variables of interest. Begin adding the one-hot encoded variables, matrices and others.", "\n")
 
-
 ### TITLE AND DESCRIPTION LENGTH ###
 print("Adding length of title and description.")
+
+
 def getTextLength(x):
     if type(x) != float and str(x) != "" and str(x) != "NaN":
         return len(x)
     else:
         return 0
+
+
 # compute title length
 opps['title_len'] = opps['title'].apply(getTextLength)
 
@@ -539,14 +548,16 @@ opps['title_len'] = opps['title'].apply(getTextLength)
 opps['description_len'] = opps['description'].apply(getTextLength)
 print("Done adding length of title and description.", "\n")
 
-
 ### NUMBER OF LANGUAGES REQUIRED ###
 print("Adding number of languages required for the opportunity.")
+
+
 def getNumLanguages(x):
     if type(x) != float and str(x) != "" and str(x) != "NaN":
         return len(x.split(','))
     else:
         return 0
+
 
 opps['num_languages'] = opps['opp_language_req'].apply(getNumLanguages)
 print("Done adding number of languages.", "\n")
@@ -563,14 +574,16 @@ print("Adding number of backgrounds required for the opportunity.")
 opps['num_backgrounds'] = opps['opp_background_req'].apply(getNumLanguages)
 print("Done adding number of backgrounds.", "\n")
 
-
 ### HAS COVER PICTURE ###
 print("Adding if has cover picture or not.")
+
+
 def getHasCoverOrProfilePic(x):
     if type(x) != float and str(x) != "" and str(x) != "NaN":
         return 1
     else:
         return 0
+
 
 opps['has_cover_pic'] = opps['cover_photo_file_size'].apply(getHasCoverOrProfilePic)
 print("Done adding if has cover picture.", "\n")
@@ -580,20 +593,24 @@ print("Adding if has profile picture or not.")
 opps['has_profile_pic'] = opps['profile_photo_file_size'].apply(getHasCoverOrProfilePic)
 print("Done adding if has profile picture.", "\n")
 
-
 ### PROJECT FEE CENTS ###
 print("Adding project fee cents.")
+
+
 def getProjectFeeCents(x):
     if type(x) != float and str(x) != "" and str(x) != "NaN":
         return x
     else:
         return 0
+
+
 opps['project_fee_cents'] = opps['project_fee_cents'].apply(getHasCoverOrProfilePic)
 print("Done adding project fee cents.", "\n")
 
-
 ### SALARY ###
 print("Adding salary from opportunity.")
+
+
 def getSalary(x):
     if type(x) != float and str(x) != "" and str(x) != "NaN":
         unwanted_str = ['$', 'USD', 'rub', ' ']
@@ -617,6 +634,7 @@ def getSalary(x):
     else:
         return 0
 
+
 opps['salary'] = opps['specifics_info'].apply(getSalary)
 print("Done adding opportunity salary.", "\n")
 
@@ -629,7 +647,7 @@ specs_df = pd.DataFrame()
 for i in range(len(opps[:])):
     df = pd.DataFrame()
     opp_id = opps.loc[i, "opportunity_id"]
-    data = {"opportunity_id":[opp_id]}
+    data = {"opportunity_id": [opp_id]}
     specific = opps.loc[i, "specifics_info"]
     if type(specific) != float and str(specific) != "nan":
         specific = specific.replace('"', '')
@@ -660,7 +678,7 @@ legal_df = pd.DataFrame()
 for i in range(len(opps[:])):
     df = pd.DataFrame()
     opp_id = opps.loc[i, "opportunity_id"]
-    data = {"opportunity_id":[opp_id]}
+    data = {"opportunity_id": [opp_id]}
     legal = opps.loc[i, "legal_info"]
     if type(legal) != float and str(legal) != "nan":
         legal = legal.replace('"', '')
@@ -687,7 +705,7 @@ role_df = pd.DataFrame()
 for i in range(len(opps[:])):
     df = pd.DataFrame()
     opp_id = opps.loc[i, "opportunity_id"]
-    data = {"opportunity_id":[opp_id]}
+    data = {"opportunity_id": [opp_id]}
     role = opps.loc[i, "role_info"]
     if type(role) != float and str(role) != "nan":
         role = role.replace('"', '')
@@ -714,7 +732,7 @@ logistics_df = pd.DataFrame()
 for i in range(len(opps[:])):
     df = pd.DataFrame()
     opp_id = opps.loc[i, "opportunity_id"]
-    data = {"opportunity_id":[opp_id]}
+    data = {"opportunity_id": [opp_id]}
     opp_id = opps.loc[i, "opportunity_id"]
     logistic = opps.loc[i, "logistics_info"]
     if type(logistic) != float and str(logistic) != "nan":
@@ -743,11 +761,14 @@ info_df = pd.merge(info_df, legal_df, how='right', on='opportunity_id')
 info_df = pd.merge(info_df, role_df, how='right', on='opportunity_id')
 info_df = pd.merge(info_df, logistics_df, how='right', on='opportunity_id')
 
-columns_to_format = ['ef_test_required', 'saturday_work', 'accommodation_covered', 'health_insurance_info', "food_weekends", "computer"]
-mapping = [('true', '1'), ('false', '0'), ('Not compulsory', 'replaced_words'), ('not compulsory', 'replaced_words'), ('Not mandatory', 'replaced_words'), ('not mandatory', 'replaced_words')]
+columns_to_format = ['ef_test_required', 'saturday_work', 'accommodation_covered', 'health_insurance_info',
+                     "food_weekends", "computer"]
+mapping = [('true', '1'), ('false', '0'), ('Not compulsory', 'replaced_words'), ('not compulsory', 'replaced_words'),
+           ('Not mandatory', 'replaced_words'), ('not mandatory', 'replaced_words')]
 for col in columns_to_format:
     for k, v in mapping:
         info_df[col] = info_df[col].replace(k, v)
+
 
 def setHealthInsuranceNeeded(x):
     if "mandatory" in x or "compulsory" in x:
@@ -755,12 +776,14 @@ def setHealthInsuranceNeeded(x):
     else:
         return 0
 
+
 def setTransportationCovered(x):
     txt = x.strip()
     if txt == "One way" or txt == "Return trip":
         return 1
     else:
         return 0
+
 
 def setNumMeals(x):
     if type(x) == float or str(x) == "" or x == "Not covered" or x == "0":
@@ -771,6 +794,7 @@ def setNumMeals(x):
             return num[0]
         else:
             return 0
+
 
 # apply the functions above to extract variables
 info_df['health_insurance_needed'] = info_df['health_insurance_info'].apply(setHealthInsuranceNeeded)
@@ -789,7 +813,7 @@ info_df_columns = [info_df['opportunity_id'],
                    info_df['health_insurance_needed'],
                    info_df['is_transportation_covered'],
                    info_df['num_meals']
-                  ]
+                   ]
 
 info_df_relevant = pd.DataFrame()
 info_df_relevant = pd.concat(info_df_columns, axis=1)
@@ -800,6 +824,8 @@ print("Done extracting the new variables.", "\n")
 
 ### IS FOOD PROVIDED ###
 print("Adding whether food is provided or not.")
+
+
 def getFoodProvided(x):
     if type(x) != float and str(x) != "" and str(x) != "NaN":
 
@@ -820,9 +846,9 @@ def getFoodProvided(x):
     else:
         return 0
 
+
 opps['food_provided'] = opps['logistics_info'].apply(getFoodProvided)
 print("Done adding if food is provided.", "\n")
-
 
 ### ADD COUNTRY CODE + HUMAN DEVELOPMENT INDEX ###
 print("Constructing the country code and HDI dataframes.")
@@ -837,7 +863,8 @@ for index, row in opps.iterrows():
     opp_id = row["opportunity_id"]
     try:
         country_code = lookup_country[country][1]
-        hdi_array = hdi.loc[hdi['Code'] == country_code]['Historical Index of Human Development (including GDP metric) ((0-1; higher values are better))'].values
+        hdi_array = hdi.loc[hdi['Code'] == country_code][
+            'Historical Index of Human Development (including GDP metric) ((0-1; higher values are better))'].values
         if hdi_array[0] != "":
             hdi_index = hdi_array[0]
         else:
@@ -849,20 +876,18 @@ for index, row in opps.iterrows():
     df = pd.DataFrame([df_data], columns=hdi_df.columns)
     data_list.append(df)
 
-
-
 hdi_df = pd.concat(data_list)
 
 # Merge the country code + HDI dataframe to the cleaned opportunities table
 print("Merging the country codes and HDI.", "\n")
 opps = pd.merge(opps, hdi_df, how='right', on='opportunity_id')
 
-
 ### PROGRAMME ID MATRIX + MONTH OF YEAR RATIO ###
 print("Constructing the programme ID matrix.")
 # Define column names
 programs = ['Global Volunteer', 'Global Talent', 'Global Entrepreneur']
-columns = ['opportunity_id', 'year_completion_ratio', 'is_global_volunteer', 'is_global_talent', 'is_global_entrepreneur']
+columns = ['opportunity_id', 'year_completion_ratio', 'is_global_volunteer', 'is_global_talent',
+           'is_global_entrepreneur']
 programme_matrix = pd.DataFrame(columns=columns)
 
 data_list = []
@@ -880,24 +905,21 @@ for index, row in opps.iterrows():
     except:
         month_ratio = 0.00
 
-
     try:
         which_program = programs.index(program_name)
     except:
         which_program = 0
 
     df_data = [opp_id, month_ratio, 0, 0, 0]
-    df_data[which_program+2] = 1
+    df_data[which_program + 2] = 1
 
     df = pd.DataFrame([df_data], columns=programme_matrix.columns)
     data_list.append(df)
-
 
 programme_matrix = pd.concat(data_list)
 # Merge the programme ID matrix and year completion ratio dataframe to the cleaned opportunities table
 print("Merging the programme ID matrix.", "\n")
 opps = pd.merge(opps, programme_matrix, how='right', on='opportunity_id')
-
 
 ### REGION MATRIX ###
 print("Constructing the regions matrix.")
@@ -909,7 +931,7 @@ data_list = []
 for index, row in opps.iterrows():
     region = row['name_region']
     opp_id = row["opportunity_id"]
-    if region == "Americas" :
+    if region == "Americas":
         df_data = [opp_id, 1, 0, 0, 0]
     elif region == "Asia Pacific":
         df_data = [opp_id, 0, 1, 0, 0]
@@ -927,7 +949,6 @@ region_matrix = pd.concat(data_list)
 # Merge the regions matrix dataframe to the cleaned opportunities table
 print("Merging the regions matrix.", "\n")
 opps = pd.merge(opps, region_matrix, how='right', on='opportunity_id')
-
 
 ### K-MEANS for JOB DESCRIPTION ###
 
@@ -949,7 +970,7 @@ print("Done formatting.", "\n")
 
 # Standard TF/IDF procedure
 corpus = desc_df.skills
-vec = CountVectorizer(min_df=0.001) # at least one occurrence in 1000
+vec = CountVectorizer(min_df=0.001)  # at least one occurrence in 1000
 X = vec.fit_transform(corpus)
 df = pd.DataFrame(X.toarray(), columns=vec.get_feature_names())
 # drop the 'other' column (useless and irrelevant)
@@ -957,7 +978,7 @@ df = df.drop(columns=['other'])
 df['opportunity_id'] = desc_df['opportunity_id']
 
 vectorizer = TfidfVectorizer()
-#response = vectorizer.fit_transform(desc_df.skills)
+# response = vectorizer.fit_transform(desc_df.skills)
 vec = vectorizer.fit(desc_df.skills)
 response = vec.transform(desc_df.skills)
 X = response.toarray()
@@ -985,12 +1006,12 @@ cluster_map['opportunity_id'] = desc_df['opportunity_id']
 # prepare the column names list to be ventually merged to the main opportunities dataframe
 columns_name_list = [["cl1"], ["cl2"], ["cl3"], ["cl4"], ["cl5"], ["cl6"], ["cl7"], ["cl8"], ["cl9"], ["cl10"]]
 for i in range(len(centers)):
-    friendly_cluster_index = i+1
+    friendly_cluster_index = i + 1
     print("Cluster", friendly_cluster_index, "has a size of", len(cluster_map[cluster_map.cluster == i]))
-    #print("Top words are:")
-    index=0;
+    # print("Top words are:")
+    index = 0;
     for ind in order_centroids[i, :10]:
-        if index==0 or index==1:
+        if index == 0 or index == 1:
             columns_name_list[i].append(terms[ind])
         print('%s' % terms[ind], end=',')
         index += 1
@@ -999,7 +1020,6 @@ for i in range(len(centers)):
 # now we construct the custom column names based on the cluster centers
 for i in range(len(columns_name_list)):
     columns_name_list[i] = '_'.join(columns_name_list[i])
-
 
 # Save cluster terms object as Python pickle
 pickle.dump(columns_name_list, open("pickles/cluster_terms.pickle", 'wb'))
@@ -1013,7 +1033,6 @@ category_merging_df = pd.DataFrame(columns=columns_name_list)
 
 data_list = []
 for i in range(len(cluster_map)):
-
     df_data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cluster_map['opportunity_id'][i]]
     df_data[cluster_map['cluster'][i]] = 1
 
@@ -1035,7 +1054,6 @@ print("Expanding the current dataframe to the format: one row for one opening.")
 column_names = opps.columns
 # add our Y variable, which is whether the opportunity has found a match or not (true or false)
 column_names = column_names.append(pd.Index(["matched"]))
-
 
 # Make sure the openings and accepted_count columns are of 'int' type only
 opps.openings = opps.openings.astype(int)
@@ -1076,13 +1094,12 @@ for index, row in opps.iterrows():
         row_data.append(0)
         df_list.append(pd.DataFrame([row_data], columns=column_names))
 
-
 # concatenate all the dataframes together
 merged = pd.concat(df_list)
 t1 = time.time()
 
 print("Expanded opportunities dataframe now has:", len(merged), "rows.")
-print("Expanding process took:", round(t1-t0, 2), "seconds")
+print("Expanding process took:", round(t1 - t0, 2), "seconds")
 
 print("###-----------------------------------------------------------------------###", "\n")
 
@@ -1124,44 +1141,44 @@ target_test = pd.DataFrame(testing_data['matched'], columns=['matched'])
 
 features = [
 
-            'openings',
-            'duration_min',
-            'application_open_window',
-            'experience_max_duration',
-            'created_vs_earliest_start',
-            'created_vs_latest_end',
-            'experience_timeframe_rigidness',
+    'openings',
+    'duration_min',
+    'application_open_window',
+    'experience_max_duration',
+    'created_vs_earliest_start',
+    'created_vs_latest_end',
+    'experience_timeframe_rigidness',
 
-            'title_len',
-            'description_len',
-            'num_languages',
-            'salary',
+    'title_len',
+    'description_len',
+    'num_languages',
+    'salary',
 
-            'project_fee_cents',
-            'num_skills',
-            'num_backgrounds',
-            'has_cover_pic',
-            'has_profile_pic',
-            'computer',
-            'expected_work_schedule',
+    'project_fee_cents',
+    'num_skills',
+    'num_backgrounds',
+    'has_cover_pic',
+    'has_profile_pic',
+    'computer',
+    'expected_work_schedule',
 
-            'accommodation_covered',
-            'food_weekends',
-            'health_insurance_needed',
-            'is_transportation_covered',
-            'num_meals',
+    'accommodation_covered',
+    'food_weekends',
+    'health_insurance_needed',
+    'is_transportation_covered',
+    'num_meals',
 
-            'is_americas',
-            'is_asia_pacific',
-            'is_europe',
-            'is_middle_east_africa',
-            'hdi',
-            'year_completion_ratio',
-            'is_global_volunteer',
-            'is_global_talent',
-            'is_global_entrepreneur'
+    'is_americas',
+    'is_asia_pacific',
+    'is_europe',
+    'is_middle_east_africa',
+    'hdi',
+    'year_completion_ratio',
+    'is_global_volunteer',
+    'is_global_talent',
+    'is_global_entrepreneur'
 
-            ]
+]
 
 # Append the custom cluster column names to the features to be considered
 custom_columns_categories = category_df.columns
@@ -1170,11 +1187,10 @@ for i in range(len(custom_columns_categories)):
     features.append(custom_columns_categories[i])
 
 # Define our X/y variables
-X_train = df_train[features] # pass the list of features to be considered
-X_test = df_test[features] # pass the list of features to be considered
+X_train = df_train[features]  # pass the list of features to be considered
+X_test = df_test[features]  # pass the list of features to be considered
 y_train = target_train["matched"]
 y_test = target_test["matched"]
-
 
 print("Ratio of 1s:", len(target_train.loc[target_train['matched'] == 1]) / len(target_train))
 print("Ratio of 0s:", len(target_train.loc[target_train['matched'] == 0]) / len(target_train), "\n")
@@ -1189,12 +1205,10 @@ for feat in features:
         X_train = X_train.drop(columns=[feat])
         X_test = X_test.drop(columns=[feat])
 
-
 # Save features object as Python pickle
 pickle.dump(X_train.columns, open("pickles/features.pickle", 'wb'))
 
 print("Training model...")
-
 
 # Train Model
 try:
@@ -1207,11 +1221,10 @@ try:
 
     print("Model Trained Successfully.", "\n")
     t1 = time.time()
-    print("Elapsed time:", round(t1-t0, 2), "seconds", "\n")
+    print("Elapsed time:", round(t1 - t0, 2), "seconds", "\n")
 except Exception as e:
     print("Sorry, an error occurred while training the model (Logistic Regression). Please re-run the program again.")
     print("Error:", e, "\n")
-
 
 ### MODEL ANALYSIS FOR LOGISTIC REGRESSION ###
 
@@ -1221,11 +1234,9 @@ print("Creating new dataframe for predictions of matched opportunities.", "\n")
 # New DataFrame for ROC curve analysis
 roc_df = pd.DataFrame(columns=["matched", "pred"])
 
-
 # add predictions to dataframe
 roc_df['pred'] = predictions
 roc_df['matched'] = y_test.values
-
 
 # fill nan values
 roc_df['pred'].fillna(roc_df['pred'].mean(), inplace=True)
@@ -1241,22 +1252,22 @@ roc_auc = auc(fpr, tpr)
 print("Area under the ROC curve: %f" % roc_auc, "\n")
 
 # results summary
-#print(model.summary(), "\n")
+# print(model.summary(), "\n")
 
 # show p-values
-#print("P-values:")
-#print(model.pvalues, "\n")
+# print("P-values:")
+# print(model.pvalues, "\n")
 
 i = np.arange(len(tpr))
-roc = pd.DataFrame({'fpr' : pd.Series(fpr, index=i),'tpr' : pd.Series(tpr, index = i), 'fpr' : pd.Series(fpr, index = i), 'tf' : pd.Series(tpr - (fpr), index = i), 'thresholds' : pd.Series(thresholds, index = i)})
-roc.iloc[(roc.tf-0).abs().argsort()[:1]]
-
+roc = pd.DataFrame({'fpr': pd.Series(fpr, index=i), 'tpr': pd.Series(tpr, index=i), 'fpr': pd.Series(fpr, index=i),
+                    'tf': pd.Series(tpr - (fpr), index=i), 'thresholds': pd.Series(thresholds, index=i)})
+roc.iloc[(roc.tf - 0).abs().argsort()[:1]]
 
 # Test Model on testing data
 predictions_new = model.predict(X_test.astype(float))
 
 print("------------------------------------")
-print("Logistic Regression Score:", ((predictions_new>0.5) == y_test).mean())
+print("Logistic Regression Score:", ((predictions_new > 0.5) == y_test).mean())
 print("------------------------------------", "\n")
 
 # Plotting
@@ -1276,10 +1287,7 @@ plt.savefig("Resources/"+filename)
 print("Plot saved as", filename, "\n")
 '''
 
-
-
 print("End of logistic regression.", "\n")
-
 
 ### DECISION TREE ###
 
@@ -1298,7 +1306,7 @@ try:
     model.fit(X_train.astype(float), y_train.astype(float))
 
     # predict on testing data
-    #predictions_tree = model.predict(X_test.astype(float)) # change X_train for X_test
+    # predictions_tree = model.predict(X_test.astype(float)) # change X_train for X_test
 
     predictions_tree = model.predict_proba(X_test.astype(float))
 
@@ -1311,9 +1319,10 @@ try:
 
     print("Model Trained Successfully.", "\n")
     t1 = time.time()
-    print("Elapsed time:", round(t1-t0, 2), "seconds", "\n")
+    print("Elapsed time:", round(t1 - t0, 2), "seconds", "\n")
 except Exception as e:
-    print("Sorry, an error occurred while training the model (Decision Tree Classifier). Please re-run the program again.")
+    print(
+        "Sorry, an error occurred while training the model (Decision Tree Classifier). Please re-run the program again.")
     print("Error:", e, "\n")
 
 '''
@@ -1324,20 +1333,17 @@ graph = graphviz.Source(dot_data)
 graph.view()
 '''
 
-
 ### MODEL ANALYSIS FOR DECISION TREE ###
 
 print("Beginning Model Analysis of Decision Tree.", "\n")
-
 
 # Test Model on testing data
 # Need to reformat the predictions and y values first
 y_test = y_test.reset_index(drop=True)
 
 print("------------------------------------")
-print("Decision Tree Score:", ((predictions_tree_series>0.5) == y_test).mean())
+print("Decision Tree Score:", ((predictions_tree_series > 0.5) == y_test).mean())
 print("------------------------------------", "\n")
-
 
 print("Creating new dataframe for predictions of matched opportunities.", "\n")
 # New DataFrame for ROC curve analysis
@@ -1346,7 +1352,6 @@ roc_df_tree = pd.DataFrame(columns=["matched", "pred"])
 # add predictions to dataframe
 roc_df_tree['pred'] = predictions_tree_series
 roc_df_tree['matched'] = y_test.values
-
 
 # fill nan values
 roc_df_tree['pred'].fillna(roc_df_tree['pred'].mean(), inplace=True)
@@ -1361,8 +1366,9 @@ roc_auc = auc(fpr, tpr)
 print("Area under the ROC curve: %f" % roc_auc, "\n")
 
 i = np.arange(len(tpr))
-roc = pd.DataFrame({'fpr' : pd.Series(fpr, index=i),'tpr' : pd.Series(tpr, index = i), 'fpr' : pd.Series(fpr, index = i), 'tf' : pd.Series(tpr - (fpr), index = i), 'thresholds' : pd.Series(thresholds, index = i)})
-roc.iloc[(roc.tf-0).abs().argsort()[:1]]
+roc = pd.DataFrame({'fpr': pd.Series(fpr, index=i), 'tpr': pd.Series(tpr, index=i), 'fpr': pd.Series(fpr, index=i),
+                    'tf': pd.Series(tpr - (fpr), index=i), 'thresholds': pd.Series(thresholds, index=i)})
+roc.iloc[(roc.tf - 0).abs().argsort()[:1]]
 
 '''
 # Plotting
@@ -1383,10 +1389,7 @@ print("Plot saved as", filename, "\n")
 
 print("End of decision tree classifier.", "\n")
 
-
-
 ###-----------------------------------------------------------------------###
-
 
 
 ### RANDOM FOREST CLASSIFIER ###
@@ -1414,7 +1417,7 @@ try:
     pickle.dump(features, open("pickles/matcha_columns.pickle", "wb"))
 
     # predict on testing data
-    #predictions_tree = model.predict(X_test.astype(float)) # change X_train for X_test
+    # predictions_tree = model.predict(X_test.astype(float)) # change X_train for X_test
 
     predictions_forest = model.predict_proba(X_test.astype(float))
 
@@ -1427,18 +1430,16 @@ try:
 
     print("Model Trained Successfully.", "\n")
     t1 = time.time()
-    print("Elapsed time:", round(t1-t0, 2), "seconds", "\n")
+    print("Elapsed time:", round(t1 - t0, 2), "seconds", "\n")
 
 except Exception as e:
-    print("Sorry, an error occurred while training the model (Decision Tree Classifier). Please re-run the program again.")
+    print(
+        "Sorry, an error occurred while training the model (Decision Tree Classifier). Please re-run the program again.")
     print("Error:", e, "\n")
-
-
 
 ### MODEL ANALYSIS FOR RANDOM FOREST ###
 
 print("Beginning Model Analysis of Random Forest.", "\n")
-
 
 # Show variable importances
 importances = model.feature_importances_
@@ -1447,9 +1448,8 @@ indices = np.argsort(importances)
 features_list = X_train.columns.tolist()
 for f in range(len(features_list)):
     # importances[indices[f]]
-    #print("%d - %s" % (indices[f], features_list[indices[f]]))
+    # print("%d - %s" % (indices[f], features_list[indices[f]]))
     pass
-
 
 '''
 plt.figure(figsize=(10, 10))
@@ -1460,11 +1460,10 @@ plt.xlabel("Feature Score")
 plt.show()
 '''
 
-
 # Test Model on testing data
 # Need to reformat the predictions and y values first
 y_test = y_test.reset_index(drop=True)
-score = ((predictions_forest_series>0.5) == y_test).mean()
+score = ((predictions_forest_series > 0.5) == y_test).mean()
 print("------------------------------------")
 print("Random Forest Score:", score)
 print("------------------------------------", "\n")
@@ -1473,8 +1472,8 @@ print("------------------------------------", "\n")
 f = open(r"Resources/model_output.txt", "a")
 
 model_status = "Model trained successfully. \n"
-model_score = "Score: "+str(score)+"\n"
-model_trained_date = str(datetime.now())+"\n"
+model_score = "Score: " + str(score) + "\n"
+model_trained_date = str(datetime.now()) + "\n"
 text = [model_status, model_score, model_trained_date, "\n"]
 for t in text:
     f.write(t)
@@ -1492,7 +1491,6 @@ roc_df_forest = pd.DataFrame(columns=["matched", "pred"])
 roc_df_forest['pred'] = predictions_forest_series
 roc_df_forest['matched'] = y_test.values
 
-
 # fill nan values
 roc_df_forest['pred'].fillna(roc_df_forest['pred'].mean(), inplace=True)
 
@@ -1506,8 +1504,9 @@ roc_auc = auc(fpr, tpr)
 print("Area under the ROC curve: %f" % roc_auc, "\n")
 
 i = np.arange(len(tpr))
-roc = pd.DataFrame({'fpr' : pd.Series(fpr, index=i),'tpr' : pd.Series(tpr, index = i), 'fpr' : pd.Series(fpr, index = i), 'tf' : pd.Series(tpr - (fpr), index = i), 'thresholds' : pd.Series(thresholds, index = i)})
-roc.iloc[(roc.tf-0).abs().argsort()[:1]]
+roc = pd.DataFrame({'fpr': pd.Series(fpr, index=i), 'tpr': pd.Series(tpr, index=i), 'fpr': pd.Series(fpr, index=i),
+                    'tf': pd.Series(tpr - (fpr), index=i), 'thresholds': pd.Series(thresholds, index=i)})
+roc.iloc[(roc.tf - 0).abs().argsort()[:1]]
 
 '''
 # Plotting
@@ -1526,7 +1525,6 @@ print("Plot saved as", filename, "\n")
 '''
 
 print("End of random forest classifier.", "\n")
-
 
 print("###------------------------------------------------------------------###", "\n")
 
