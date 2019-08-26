@@ -322,8 +322,8 @@ localhost = '127.0.0.1'
 ip = '207.107.68.234'
 remote_host = 'gisapi-production-aurora.cluster-ro-csrm8v3e6d8r.eu-west-1.rds.amazonaws.com'
 ssh_username = 'ec2-user'
-ssh_private_key = '/Users/felixsimard/OneDrive - McGill University/Personal/SeedAISummer2019/matchability/matchability_api/matchability_lib/intercom_scripts.pem'
-#ssh_private_key = '/root/core-bot/intercom_scripts.pem'
+#ssh_private_key = '/Users/felixsimard/OneDrive - McGill University/Personal/SeedAISummer2019/matchability/matchability_api/matchability_lib/intercom_scripts.pem'
+ssh_private_key = '/root/core-bot/intercom_scripts.pem'
 
 # db variables
 user = 'gisapi_prod'
@@ -368,7 +368,7 @@ print("---------------------------------------------------------------", "\n")
 # opps = opps.drop_duplicates(subset=['opportunity_id'])
 
 print("Total opportunities:", len(opps), "\n")
-opps = opps[:100000]
+opps = opps[:20000]
 apps = apps.loc[apps['an_status'] == "accepted"]
 print("Total opportunities:", len(opps), "\n")
 print("Total 'accepted' applications:", len(apps), "\n")
