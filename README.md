@@ -228,7 +228,7 @@ Finally, in order to train the model, the longest step is to expand each opportu
 
 ### Training
 
-We train the  model using three different modeling algorithms, but we keep one as the production model: a logistic regression, a decision tree and a random forest (used in production).
+We train the model using three different modeling algorithms, but we keep one as the production model: a logistic regression, a decision tree and a random forest (used in production).
 
 The Random Forest Classifier gets passed 41 features.
 The split value between training and testing data is respectively 70/30.
@@ -242,7 +242,6 @@ The Python package used to train the model is:
 from sklearn.ensemble import RandomForestClassifier
 ```
 
-
 ### Analysis
 
 To understand if our trained model is "accurate" or not, we need to test the model on the testing dataset as mentioned above. We then, compute the ratio of correctly predicted outcomes by the model versus the true values from the dataset.
@@ -251,6 +250,10 @@ Additionally, we can plot a Receiver Operating Characteristic curve which tells 
 ```
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 ```
+
+### Assumptions by the model
+
+The model is trained to predict whether a newly created opportunity will find suitable applicants or not by returning a probability of matching. Note, given the number of openings for an opportunity, the model will predict whether it is likely or not to fill in ALL OF THE OPENINGS, not simply "at least one of them". Therefore, for the current model, for two given opportunities with the same characteristics, the one with the lower number of openings will return a higher probability of finding suitable applicants than the one having a greater number of openings.
 
 ## Other file(s) and folder(s)
 
