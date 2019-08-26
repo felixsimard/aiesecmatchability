@@ -14,6 +14,8 @@ import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from matchability_api.settings import BASE_DIR
+
 
 # Returns the difference between two dates
 def dateDiff(date1, date2):  # date1 and date2 come in as Strings
@@ -343,7 +345,7 @@ def matchability(d):
 
     regions = {'Americas': 0, 'Asia Pacific': 0, 'Europe': 0, 'Middle East and Africa': 0}
     # HDI
-    hdi = pd.read_csv('matchability_lib/Data/hdi_gdp_2015.csv', low_memory=False)
+    hdi = pd.read_csv(BASE_DIR+'/matchability_lib/Data/hdi_gdp_2015.csv', low_memory=False)
     country = name_entity
     try:
         country_code = lookup_country[country][1]
@@ -428,11 +430,11 @@ def matchability(d):
     ### K-MEANS for JOB DESCRIPTION ###
 
     # Load the kmeans pickle
-    km = pickle.load(open("matchability_lib/pickles/kmeans.pickle", 'rb'))
+    km = pickle.load(open(BASE_DIR+"/matchability_lib/pickles/kmeans.pickle", 'rb'))
 
-    vec = pickle.load(open("matchability_lib/pickles/vectorizer.pickle", 'rb'))
+    vec = pickle.load(open(BASE_DIR+"/matchability_lib/pickles/vectorizer.pickle", 'rb'))
 
-    cluster_terms = pickle.load(open("matchability_lib/pickles/cluster_terms.pickle", 'rb'))
+    cluster_terms = pickle.load(open(BASE_DIR+"/matchability_lib/pickles/cluster_terms.pickle", 'rb'))
 
     vectorizer = TfidfVectorizer()
     skills_vec = vec.transform(skills_df.skills)
@@ -559,10 +561,10 @@ def matchability(d):
     # Now predict the output
 
     # Open the model
-    model = pickle.load(open("matchability_lib/pickles/matcha_model.pickle", 'rb'))
+    model = pickle.load(open(BASE_DIR+"/matchability_lib/pickles/matcha_model.pickle", 'rb'))
 
     # Load the considered features
-    features = pickle.load(open("matchability_lib/pickles/features.pickle", 'rb'))
+    features = pickle.load(open(BASE_DIR+"/matchability_lib/pickles/features.pickle", 'rb'))
 
     # features dictionary
     feat_dict = {

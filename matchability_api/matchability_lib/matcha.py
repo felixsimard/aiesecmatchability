@@ -152,7 +152,7 @@ def execute_sql(filename, csv_name):
 
             # save results dataframe to CSV
             print("Saving results to", "Data/" + csv_name)
-            df.to_csv("Data/" + csv_name)
+            df.to_csv(BASE_DIR+"/matchability_lib/Data/" + csv_name)
 
             return df
 
@@ -322,8 +322,8 @@ localhost = '127.0.0.1'
 ip = '207.107.68.234'
 remote_host = 'gisapi-production-aurora.cluster-ro-csrm8v3e6d8r.eu-west-1.rds.amazonaws.com'
 ssh_username = 'ec2-user'
-# ssh_private_key = '/Users/felixsimard/OneDrive - McGill University/Personal/SeedAISummer2019/matchability/matchability_api/matchability_lib/intercom_scripts.pem'
-ssh_private_key = '/root/core-bot/intercom_scripts.pem'
+ssh_private_key = '/Users/felixsimard/OneDrive - McGill University/Personal/SeedAISummer2019/matchability/matchability_api/matchability_lib/intercom_scripts.pem'
+#ssh_private_key = '/root/core-bot/intercom_scripts.pem'
 
 # db variables
 user = 'gisapi_prod'
@@ -339,16 +339,15 @@ print("SQL Data Extraction.")
 tic = time.time()
 # Fetch the opportunities
 # old path: sql/aiesec_opportunities_extraction.sql
-opps = execute_sql("/root/matchability_api/current/matchability_api/matchability_lib/sql/aiesec_opportunities_extraction.sql", "aiesec_opportunities_extracted.csv")
+#opps = execute_sql("/root/matchability_api/current/matchability_api/matchability_lib/sql/aiesec_opportunities_extraction.sql", "aiesec_opportunities_extracted.csv")
+opps = execute_sql(BASE_DIR+"/matchability_lib/sql/aiesec_opportunities_extraction.sql", "aiesec_opportunities_extracted.csv")
 toc = time.time()
 print("Opportunities data extraction took:", round((toc - tic), 2), "seconds")
 
 # Fetch the applications
 # old path: sql/aiesec_applications_extraction.sql
 tic = time.time()
-apps = execute_sql(
-    "/root/matchability_api/current/matchability_api/matchability_lib/sql/aiesec_applications_extraction.sql",
-    "aiesec_applications_extracted.csv")
+apps = execute_sql(BASE_DIR+"/matchability_lib/sql/aiesec_applications_extraction.sql", "aiesec_applications_extracted.csv")
 toc = time.time()
 print("Applications data extraction took:", round((toc - tic), 2), "seconds")
 
@@ -359,8 +358,8 @@ print("Applications data extraction took:", round((toc - tic), 2), "seconds")
 # Load opportunities CSV table
 print("Extracting...", "\n")
 print("Reading data...a moment please...")
-opps = pd.read_csv('Data/aiesec_opportunities_extracted.csv', low_memory=False)
-apps = pd.read_csv('Data/aiesec_applications_extracted.csv', low_memory=False)
+opps = pd.read_csv(BASE_DIR+'/matchability_lib/Data/aiesec_opportunities_extracted.csv', low_memory=False)
+apps = pd.read_csv(BASE_DIR+'/matchability_lib/Data/aiesec_applications_extracted.csv', low_memory=False)
 print("Total opportunities:", len(opps), "\n")
 
 print("---------------------------------------------------------------", "\n")
@@ -643,7 +642,7 @@ print("Done adding opportunity salary.", "\n")
 ### EXTRACT SOME VARIABLES FROM THE HASMAP LIKE TEXTFIELDS ###
 print("Extracting some new variables.")
 ### SPECIFICS INFO ###
-
+print("Working on the specifics info...")
 df_list = []
 specs_df = pd.DataFrame()
 for i in range(len(opps[:])):
@@ -674,7 +673,7 @@ specs_df = pd.concat(df_list)
 specs_df = specs_df.fillna("undefined")
 
 ### LEGAL INFO ###
-
+print("Working on the legal info...")
 df_list = []
 legal_df = pd.DataFrame()
 for i in range(len(opps[:])):
@@ -701,7 +700,7 @@ legal_df = pd.concat(df_list)
 legal_df = legal_df.fillna("undefined")
 
 ### ROLE INFO ###
-
+print("Working on the role info...")
 df_list = []
 role_df = pd.DataFrame()
 for i in range(len(opps[:])):
@@ -728,7 +727,7 @@ role_df = pd.concat(df_list)
 role_df = role_df.fillna("undefined")
 
 ### LOGISTICS INFO ###
-
+print("Working on the logisitics info...")
 df_list = []
 logistics_df = pd.DataFrame()
 for i in range(len(opps[:])):
@@ -757,6 +756,7 @@ logistics_df = pd.concat(df_list)
 logistics_df = logistics_df.fillna("undefined")
 
 # New Dataframe with the relevant columns
+print("Creating new dataframe with the new relevant columns...")
 info_df = pd.DataFrame()
 info_df = pd.concat([specs_df])
 info_df = pd.merge(info_df, legal_df, how='right', on='opportunity_id')
@@ -820,6 +820,7 @@ info_df_columns = [info_df['opportunity_id'],
 info_df_relevant = pd.DataFrame()
 info_df_relevant = pd.concat(info_df_columns, axis=1)
 
+print("Merging the new relevant columns to the main dataframe...")
 opps = pd.merge(opps, info_df_relevant, how='right', on='opportunity_id')
 
 print("Done extracting the new variables.", "\n")
@@ -854,7 +855,7 @@ print("Done adding if food is provided.", "\n")
 
 ### ADD COUNTRY CODE + HUMAN DEVELOPMENT INDEX ###
 print("Constructing the country code and HDI dataframes.")
-hdi = pd.read_csv('Data/hdi_gdp_2015.csv', low_memory=False)
+hdi = pd.read_csv(BASE_DIR+'/matchability_lib/Data/hdi_gdp_2015.csv', low_memory=False)
 columns = ['opportunity_id', 'country_code', 'hdi']
 
 hdi_df = pd.DataFrame(columns=columns)
@@ -991,10 +992,10 @@ centers = kmeans_groups.cluster_centers_
 labels = kmeans_groups.predict(X)
 
 # Save vectorizer object as Python pickle
-pickle.dump(vec, open("pickles/vectorizer.pickle", 'wb'))
+pickle.dump(vec, open(BASE_DIR+'/matchability_lib/pickles/vectorizer.pickle', 'wb'))
 
 # Save kmeans object as Python pickle
-pickle.dump(kmeans_groups, open("pickles/kmeans.pickle", 'wb'))
+pickle.dump(kmeans_groups, open(BASE_DIR+"/matchability_lib/pickles/kmeans.pickle", 'wb'))
 
 print("Fetching top words per clusters.", "\n")
 order_centroids = kmeans_groups.cluster_centers_.argsort()[:, ::-1]
@@ -1024,7 +1025,7 @@ for i in range(len(columns_name_list)):
     columns_name_list[i] = '_'.join(columns_name_list[i])
 
 # Save cluster terms object as Python pickle
-pickle.dump(columns_name_list, open("pickles/cluster_terms.pickle", 'wb'))
+pickle.dump(columns_name_list, open(BASE_DIR+"/matchability_lib/pickles/cluster_terms.pickle", 'wb'))
 
 columns_name_list.append("opportunity_id")
 
@@ -1208,7 +1209,7 @@ for feat in features:
         X_test = X_test.drop(columns=[feat])
 
 # Save features object as Python pickle
-pickle.dump(X_train.columns, open("pickles/features.pickle", 'wb'))
+pickle.dump(X_train.columns, open(BASE_DIR+"/matchability_lib/pickles/features.pickle", 'wb'))
 
 print("Training model...")
 
@@ -1413,10 +1414,10 @@ try:
     model.fit(X_train.astype(float), y_train.astype(float))
 
     # Save model as python pickle
-    pickle.dump(model, open("pickles/matcha_model.pickle", 'wb'))
+    pickle.dump(model, open(BASE_DIR+"matchability_lib/pickles/matcha_model.pickle", 'wb'))
 
     # Save testing columns names as pickle
-    pickle.dump(features, open("pickles/matcha_columns.pickle", "wb"))
+    pickle.dump(features, open(BASE_DIR+"/matchability_lib/pickles/matcha_columns.pickle", "wb"))
 
     # predict on testing data
     # predictions_tree = model.predict(X_test.astype(float)) # change X_train for X_test
@@ -1471,7 +1472,7 @@ print("Random Forest Score:", score)
 print("------------------------------------", "\n")
 
 ### OUTPUT TEXT FILE ###
-f = open(r"Resources/model_output.txt", "a")
+f = open(BASE_DIR+"/matchability_lib/Resources/model_output.txt", "a")
 
 model_status = "Model trained successfully. \n"
 model_score = "Score: " + str(score) + "\n"
