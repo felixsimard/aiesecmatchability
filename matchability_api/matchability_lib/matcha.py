@@ -338,13 +338,13 @@ print("SQL Data Extraction.")
 
 tic = time.time()
 # Fetch the opportunities
-opps = execute_sql(
-    "/root/matchability_api/current/matchability_api/matchability_lib/sql/aiesec_opportunities_extraction.sql",
-    "aiesec_opportunities_extracted.csv")
+# old path: sql/aiesec_opportunities_extraction.sql
+opps = execute_sql("/root/matchability_api/current/matchability_api/matchability_lib/sql/aiesec_opportunities_extraction.sql", "aiesec_opportunities_extracted.csv")
 toc = time.time()
 print("Opportunities data extraction took:", round((toc - tic), 2), "seconds")
 
 # Fetch the applications
+# old path: sql/aiesec_applications_extraction.sql
 tic = time.time()
 apps = execute_sql(
     "/root/matchability_api/current/matchability_api/matchability_lib/sql/aiesec_applications_extraction.sql",
@@ -394,7 +394,7 @@ print(len(opps.loc[opps['openings'].apply(lambda x: x == 0)]), "rows ignored.", 
 opps = opps.loc[opps['openings'].apply(lambda x: x != 0)]
 
 # replacing possible infinite values
-print("Replacing possible inifite values.", "\n")
+print("Replacing possible infinite values.", "\n")
 opps = opps.replace([np.inf, -np.inf, "nan", "NaN"], 0)
 # opps.dropna(inplace=True)
 
