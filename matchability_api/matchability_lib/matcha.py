@@ -4,7 +4,7 @@ Matchability - Training model
 Data extraction, cleaning, formatting and model training.
 
 '''
-
+import os
 import warnings;
 from datetime import timedelta, datetime
 
@@ -19,6 +19,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import train_test_split
+
+from matchability_api.settings import BASE_DIR
 
 warnings.simplefilter('ignore')
 import time
